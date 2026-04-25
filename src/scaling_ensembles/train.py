@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import logging
 import random
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,6 +19,9 @@ from scaling_ensembles.data import DatasetInfo, make_dataloaders
 from scaling_ensembles.models import count_parameters, make_model
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 @dataclass(frozen=True)
 class TrainResult:
     width: int
@@ -32,7 +36,7 @@ class TrainResult:
 
 def resolve_device(device: str) -> torch.device:
     if device == "mps" and not torch.backends.mps.is_available():
-        print("Requested device 'mps', but MPS is unavailable. Falling back to CPU.")
+        LOGGER.warning("Requested device 'mps', but MPS is unavailable. Falling back to CPU.")
         return torch.device("cpu")
     if device != "auto":
         return torch.device(device)
@@ -54,10 +58,20 @@ def train_one(
     seed: int,
     output_dir: str | Path | None = None,
 ) -> TrainResult:
+    LOGGER.info("Starting training run: width=%s seed=%s", width, seed)
     set_seed(seed)
     train_loader, eval_loader, dataset_info = make_dataloaders(config.data)
     device = resolve_device(config.training.device)
     model = make_model(config.model, dataset_info, width).to(device)
+    parameter_count = count_parameters(model)
+    LOGGER.info(
+        "Prepared model: architecture=%s params=%s dataset=%s input_shape=%s device=%s",
+        config.model.architecture,
+        f"{parameter_count:,}",
+        config.data.name,
+        dataset_info.input_shape,
+        device,
+    )
     optimizer = AdamW(
         model.parameters(),
         lr=config.training.optimizer.lr,
@@ -66,8 +80,10 @@ def train_one(
     criterion = nn.CrossEntropyLoss()
 
     for epoch in range(config.training.epochs):
+        LOGGER.info("Training epoch %s/%s", epoch + 1, config.training.epochs)
         train_epoch(model, train_loader, optimizer, criterion, device, epoch)
 
+    LOGGER.info("Evaluating final train and eval metrics")
     train_loss, train_accuracy = evaluate(model, train_loader, criterion, device)
     eval_loss, eval_accuracy = evaluate(model, eval_loader, criterion, device)
 
@@ -75,7 +91,6 @@ def train_one(
     checkpoint_dir = base_dir / "checkpoints"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     checkpoint_path = checkpoint_dir / f"width_{width}_seed_{seed}.pt"
-    parameter_count = count_parameters(model)
     torch.save(
         {
             "state_dict": model.state_dict(),
@@ -85,6 +100,15 @@ def train_one(
             "dataset": dataset_info,
             "model_config": config.model,
         },
+        checkpoint_path,
+    )
+    LOGGER.info(
+        "Finished width=%s seed=%s train_acc=%.4f eval_acc=%.4f eval_loss=%.4f checkpoint=%s",
+        width,
+        seed,
+        train_accuracy,
+        eval_accuracy,
+        eval_loss,
         checkpoint_path,
     )
 
@@ -171,6 +195,7 @@ def write_train_results(results: list[TrainResult], path: str | Path) -> None:
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     parser = argparse.ArgumentParser(description="Train one model for a scaling-ensembles experiment.")
     parser.add_argument("--config", required=True, help="Path to a YAML experiment config.")
     parser.add_argument("--width", required=True, type=int, help="Model width.")
