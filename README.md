@@ -23,9 +23,24 @@ Run a small MNIST width sweep:
 scaling-ensembles-sweep --config experiments/mnist_width_sweep.yaml
 ```
 
+Run a CIFAR-10 convolutional width sweep:
+
+```bash
+scaling-ensembles-sweep --config experiments/cifar10_cnn_width_sweep.yaml
+```
+
+Run a CIFAR-10 patch-transformer width sweep:
+
+```bash
+scaling-ensembles-sweep --config experiments/cifar10_patch_transformer_width_sweep.yaml
+```
+
 This trains multiple random seeds for each width, saves checkpoints, computes
 pairwise function similarity, and writes CSV summaries under the configured
 output directory.
+
+On macOS, `device: auto` prefers PyTorch's Apple Metal backend (`mps`) before
+checking CUDA. The CIFAR-10 configs set `device: mps` explicitly.
 
 Open the Marimo app:
 
