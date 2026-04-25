@@ -81,7 +81,16 @@ tracking:
   tracking_uri: outputs/mlruns
   experiment_name: scaling-ensembles-series
   log_artifacts: true
+  log_checkpoints: true
+  log_logits: true
+  log_environment: true
+  use_mlflow_cache: true
 ```
+
+MLflow is also used as a remote cache when `use_mlflow_cache` is enabled. If an
+interrupted run loses local files, the sweep searches previous completed MLflow
+runs with the same dataset, architecture, widths, seeds, epochs, and optimizer,
+then downloads matching checkpoint and logits artifacts before recomputing them.
 
 Run paper-style plots after a set of sweeps:
 
