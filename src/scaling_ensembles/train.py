@@ -61,6 +61,13 @@ def train_one(
     output_dir: str | Path | None = None,
 ) -> TrainResult:
     LOGGER.info("Starting training run: width=%s seed=%s", width, seed)
+    base_dir = Path(output_dir or config.output_dir)
+    checkpoint_dir = base_dir / "checkpoints"
+    checkpoint_path = checkpoint_dir / f"width_{width}_seed_{seed}.pt"
+    cached_result = maybe_load_cached_result(config, width, seed, checkpoint_path)
+    if cached_result is not None:
+        return cached_result
+
     set_seed(seed)
     train_loader, eval_loader, dataset_info = make_dataloaders(config.data)
     device = resolve_device(config.training.device)
@@ -116,10 +123,7 @@ def train_one(
     train_loss, train_accuracy = evaluate(model, train_loader, criterion, device)
     eval_loss, eval_accuracy = evaluate(model, eval_loader, criterion, device)
 
-    base_dir = Path(output_dir or config.output_dir)
-    checkpoint_dir = base_dir / "checkpoints"
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    checkpoint_path = checkpoint_dir / f"width_{width}_seed_{seed}.pt"
     torch.save(
         {
             "state_dict": model.state_dict(),
@@ -128,6 +132,10 @@ def train_one(
             "parameter_count": parameter_count,
             "epochs_completed": epochs_completed,
             "stop_reason": stop_reason,
+            "train_loss": train_loss,
+            "train_accuracy": train_accuracy,
+            "eval_loss": eval_loss,
+            "eval_accuracy": eval_accuracy,
             "dataset": dataset_info,
             "model_config": config.model,
         },
@@ -214,6 +222,59 @@ def load_checkpoint_model(
     model.load_state_dict(checkpoint["state_dict"])
     model.eval()
     return model
+
+
+def maybe_load_cached_result(
+    config: ExperimentConfig,
+    width: int,
+    seed: int,
+    checkpoint_path: Path,
+) -> TrainResult | None:
+    if (
+        not config.cache.enabled
+        or not config.cache.reuse_checkpoints
+        or config.cache.force_retrain
+        or not checkpoint_path.exists()
+    ):
+        return None
+
+    LOGGER.info("Reusing cached checkpoint: %s", checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+    required_metrics = {"train_loss", "train_accuracy", "eval_loss", "eval_accuracy"}
+    if required_metrics.issubset(checkpoint):
+        return TrainResult(
+            width=width,
+            seed=seed,
+            parameter_count=int(checkpoint["parameter_count"]),
+            checkpoint_path=checkpoint_path,
+            epochs_completed=int(checkpoint.get("epochs_completed", config.training.epochs)),
+            stop_reason=str(checkpoint.get("stop_reason", "cached")),
+            train_loss=float(checkpoint["train_loss"]),
+            train_accuracy=float(checkpoint["train_accuracy"]),
+            eval_loss=float(checkpoint["eval_loss"]),
+            eval_accuracy=float(checkpoint["eval_accuracy"]),
+        )
+
+    LOGGER.info("Cached checkpoint lacks metrics; evaluating once to rebuild TrainResult")
+    train_loader, eval_loader, dataset_info = make_dataloaders(config.data)
+    device = resolve_device(config.training.device)
+    model = make_model(config.model, dataset_info, width).to(device)
+    model.load_state_dict(checkpoint["state_dict"])
+    criterion = nn.CrossEntropyLoss()
+    train_loss, train_accuracy = evaluate(model, train_loader, criterion, device)
+    eval_loss, eval_accuracy = evaluate(model, eval_loader, criterion, device)
+    return TrainResult(
+        width=width,
+        seed=seed,
+        parameter_count=int(checkpoint["parameter_count"]),
+        checkpoint_path=checkpoint_path,
+        epochs_completed=int(checkpoint.get("epochs_completed", config.training.epochs)),
+        stop_reason=str(checkpoint.get("stop_reason", "cached_evaluated")),
+        train_loss=train_loss,
+        train_accuracy=train_accuracy,
+        eval_loss=eval_loss,
+        eval_accuracy=eval_accuracy,
+    )
 
 
 def write_train_results(results: list[TrainResult], path: str | Path) -> None:
