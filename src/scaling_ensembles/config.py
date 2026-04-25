@@ -16,6 +16,9 @@ class DataConfig:
     num_workers: int = 0
     train_subset: int | None = None
     eval_subset: int | None = None
+    eval_variant: str = "clean"
+    noise_std: float = 0.15
+    blur_kernel_size: int = 3
 
 
 @dataclass(frozen=True)
@@ -40,6 +43,9 @@ class TrainingConfig:
     epochs: int = 5
     seeds: tuple[int, ...] = (0, 1, 2)
     device: str = "auto"
+    target_train_loss: float | None = None
+    min_epochs: int = 1
+    eval_every_epochs: int = 1
     optimizer: OptimizerConfig = field(default_factory=OptimizerConfig)
 
 
