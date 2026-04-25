@@ -41,16 +41,76 @@ class SmallCNN(nn.Module):
             nn.Conv2d(width, 2 * width, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2),
+            nn.AdaptiveAvgPool2d((4, 4)),
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(2 * width * 7 * 7, 4 * width),
+            nn.Linear(2 * width * 4 * 4, 4 * width),
             nn.ReLU(),
             nn.Linear(4 * width, num_classes),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.classifier(self.features(x))
+
+
+class PatchTransformerClassifier(nn.Module):
+    """Small DiT/ViT-style image classifier for function-similarity sweeps."""
+
+    def __init__(
+        self,
+        input_shape: tuple[int, int, int],
+        num_classes: int,
+        width: int,
+        depth: int,
+        patch_size: int,
+        num_heads: int,
+        dropout: float = 0.0,
+    ) -> None:
+        super().__init__()
+        channels, height, image_width = input_shape
+        if height % patch_size != 0 or image_width % patch_size != 0:
+            raise ValueError(
+                f"Patch size {patch_size} must divide image shape {(height, image_width)}."
+            )
+        if width % num_heads != 0:
+            raise ValueError(f"Width {width} must be divisible by num_heads {num_heads}.")
+
+        num_patches = (height // patch_size) * (image_width // patch_size)
+        self.patch_embed = nn.Conv2d(
+            channels,
+            width,
+            kernel_size=patch_size,
+            stride=patch_size,
+        )
+        self.class_token = nn.Parameter(torch.zeros(1, 1, width))
+        self.position_embed = nn.Parameter(torch.zeros(1, num_patches + 1, width))
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=width,
+            nhead=num_heads,
+            dim_feedforward=4 * width,
+            dropout=dropout,
+            activation="gelu",
+            batch_first=True,
+            norm_first=True,
+        )
+        self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=depth)
+        self.norm = nn.LayerNorm(width)
+        self.head = nn.Linear(width, num_classes)
+        self._init_parameters()
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        tokens = self.patch_embed(x).flatten(2).transpose(1, 2)
+        class_tokens = self.class_token.expand(tokens.shape[0], -1, -1)
+        tokens = torch.cat([class_tokens, tokens], dim=1) + self.position_embed
+        encoded = self.encoder(tokens)
+        return self.head(self.norm(encoded[:, 0]))
+
+    def _init_parameters(self) -> None:
+        nn.init.trunc_normal_(self.position_embed, std=0.02)
+        nn.init.trunc_normal_(self.class_token, std=0.02)
+        nn.init.trunc_normal_(self.head.weight, std=0.02)
+        nn.init.zeros_(self.head.bias)
 
 
 def make_model(config: ModelConfig, dataset: DatasetInfo, width: int) -> nn.Module:
@@ -65,7 +125,19 @@ def make_model(config: ModelConfig, dataset: DatasetInfo, width: int) -> nn.Modu
         )
     if architecture == "cnn":
         return SmallCNN(dataset.input_shape, dataset.num_classes, width)
-    raise ValueError(f"Unsupported architecture: {config.architecture}. Try mlp or cnn.")
+    if architecture in {"patch_transformer", "dit", "dit_classifier"}:
+        return PatchTransformerClassifier(
+            input_shape=dataset.input_shape,
+            num_classes=dataset.num_classes,
+            width=width,
+            depth=config.hidden_layers,
+            patch_size=config.patch_size,
+            num_heads=config.num_heads,
+            dropout=config.dropout,
+        )
+    raise ValueError(
+        f"Unsupported architecture: {config.architecture}. Try mlp, cnn, or patch_transformer."
+    )
 
 
 def count_parameters(model: nn.Module) -> int:
