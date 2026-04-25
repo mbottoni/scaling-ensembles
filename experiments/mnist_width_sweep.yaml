@@ -1,0 +1,30 @@
+name: mnist-width-sweep
+output_dir: outputs/mnist-width-sweep
+
+data:
+  name: MNIST
+  root: data
+  batch_size: 128
+  eval_batch_size: 512
+  num_workers: 0
+  # Keep the first run quick. Remove these limits for paper-grade runs.
+  train_subset: 10000
+  eval_subset: 2000
+
+model:
+  architecture: mlp
+  widths: [32, 64, 128, 256]
+  hidden_layers: 2
+  activation: relu
+
+training:
+  epochs: 3
+  seeds: [0, 1, 2]
+  device: auto
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.0
+
+similarity:
+  max_pairs_per_width:
+  interpolation_steps: 11
