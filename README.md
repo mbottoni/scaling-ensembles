@@ -57,7 +57,17 @@ tracking:
   tracking_uri: outputs/mlruns
   experiment_name: scaling-ensembles
   log_artifacts: true
+  log_checkpoints: true
+  log_logits: true
+  log_environment: true
+  use_mlflow_cache: true
 ```
+
+When MLflow tracking is enabled, sweeps log the YAML config, environment and git
+metadata, per-model metrics, pairwise/interpolation metrics, CSV summaries,
+checkpoints, and cached logits. With `use_mlflow_cache: true`, a new run can
+restore matching checkpoints and logits from previous completed MLflow runs when
+the local files are missing.
 
 On macOS, `device: auto` prefers PyTorch's Apple Metal backend (`mps`) before
 checking CUDA. The CIFAR-10 configs set `device: mps` explicitly.
