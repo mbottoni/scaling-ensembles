@@ -28,6 +28,8 @@ class TrainResult:
     seed: int
     parameter_count: int
     checkpoint_path: Path
+    epochs_completed: int
+    stop_reason: str
     train_loss: float
     train_accuracy: float
     eval_loss: float
@@ -78,10 +80,37 @@ def train_one(
         weight_decay=config.training.optimizer.weight_decay,
     )
     criterion = nn.CrossEntropyLoss()
+    epochs_completed = 0
+    stop_reason = "max_epochs"
+    train_loss = float("nan")
+    train_accuracy = float("nan")
 
     for epoch in range(config.training.epochs):
         LOGGER.info("Training epoch %s/%s", epoch + 1, config.training.epochs)
         train_epoch(model, train_loader, optimizer, criterion, device, epoch)
+        epochs_completed = epoch + 1
+        should_check_target = (
+            config.training.target_train_loss is not None
+            and epochs_completed >= config.training.min_epochs
+            and epochs_completed % config.training.eval_every_epochs == 0
+        )
+        if should_check_target:
+            train_loss, train_accuracy = evaluate(model, train_loader, criterion, device)
+            LOGGER.info(
+                "Target-loss check epoch=%s train_loss=%.4f train_acc=%.4f target=%.4f",
+                epochs_completed,
+                train_loss,
+                train_accuracy,
+                config.training.target_train_loss,
+            )
+            if train_loss <= config.training.target_train_loss:
+                stop_reason = "target_train_loss"
+                LOGGER.info(
+                    "Stopping early: train_loss %.4f <= target %.4f",
+                    train_loss,
+                    config.training.target_train_loss,
+                )
+                break
 
     LOGGER.info("Evaluating final train and eval metrics")
     train_loss, train_accuracy = evaluate(model, train_loader, criterion, device)
@@ -97,6 +126,8 @@ def train_one(
             "width": width,
             "seed": seed,
             "parameter_count": parameter_count,
+            "epochs_completed": epochs_completed,
+            "stop_reason": stop_reason,
             "dataset": dataset_info,
             "model_config": config.model,
         },
@@ -117,6 +148,8 @@ def train_one(
         seed=seed,
         parameter_count=parameter_count,
         checkpoint_path=checkpoint_path,
+        epochs_completed=epochs_completed,
+        stop_reason=stop_reason,
         train_loss=train_loss,
         train_accuracy=train_accuracy,
         eval_loss=eval_loss,
