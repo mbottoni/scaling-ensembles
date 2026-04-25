@@ -1,0 +1,279 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{parskip}
+
+\title{Scaling Ensembles: Function-Space Similarity Across Parameter Count}
+\author{Experimental notes generated from the \texttt{scaling-ensembles} repository}
+\date{April 25, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This report studies whether independently trained neural networks become more
+functionally similar as their parameter count increases. The starting point is
+Fort, Hu, and Lakshminarayanan's ``Deep Ensembles: A Loss Landscape
+Perspective'', which argues that deep ensembles work well because independent
+random initializations explore distinct modes in function space, while
+trajectory-local subspace methods tend to remain inside one prediction-space
+mode. Here we reproduce a small subset of that experimental logic, but add
+parameter count as the main scaling axis. We run width sweeps for an MNIST MLP,
+a CIFAR-10 CNN, and a CIFAR-10 patch-transformer classifier, then compare
+accuracy, pairwise prediction agreement, Jensen-Shannon divergence, ensemble
+gain, and linear interpolation barriers.
+\end{abstract}
+
+\section{Background}
+
+Let a neural network with parameters $\theta$ define a predictive distribution
+$p_\theta(y \mid x)$ and a class prediction
+\[
+    f_\theta(x) = \arg\max_y p_\theta(y \mid x).
+\]
+Deep ensembles train several networks from different random initializations,
+producing parameters $\theta_1,\dots,\theta_M$. The ensemble prediction is
+usually the arithmetic mean of predictive distributions:
+\[
+    p_{\mathrm{ens}}(y \mid x)
+    = \frac{1}{M}\sum_{m=1}^M p_{\theta_m}(y \mid x).
+\]
+If the ensemble members make accurate but decorrelated errors, averaging can
+improve both accuracy and uncertainty estimates.
+
+The key distinction in Fort et al. is between \emph{weight-space} similarity and
+\emph{function-space} similarity. Two models may be far apart in weight space
+but compute similar functions, or they may be connected by a low-loss path while
+still representing substantially different classifiers. The paper therefore
+measures not only loss or parameter distance, but also prediction-space
+quantities such as disagreement, Jensen-Shannon divergence, and t-SNE embeddings
+of softmax vectors.
+
+\section{Connection to Fort et al.}
+
+Fort et al. perform several experiments that motivate this project:
+
+\begin{itemize}
+    \item compare checkpoints within one training trajectory against checkpoints
+    from different random initializations;
+    \item visualize prediction vectors with t-SNE;
+    \item sample local subspaces around one optimum using dropout, diagonal
+    Gaussian approximations, low-rank Gaussian approximations, and random
+    subspaces;
+    \item build diversity-accuracy plots comparing independent initializations
+    to subspace samples;
+    \item compare baseline models, subspace sampling, deep ensembles, and
+    ensemble-plus-subspace methods;
+    \item test behavior under dataset shift on CIFAR-10-C and ImageNet-C.
+\end{itemize}
+
+This report focuses on a narrower question: when architecture width and
+parameter count increase, do independently trained minima become more similar
+as functions? This is related to the paper's diversity-accuracy plane, but uses
+parameter count as an explicit independent variable.
+
+\section{Metrics}
+
+For a pair of independently trained models $a,b$, the experiments compute:
+
+\begin{align}
+    \mathrm{agreement}(a,b)
+    &= \frac{1}{N}\sum_{n=1}^N
+       \mathbf{1}\{f_{\theta_a}(x_n)=f_{\theta_b}(x_n)\}, \\
+    \mathrm{disagreement}(a,b)
+    &= 1 - \mathrm{agreement}(a,b).
+\end{align}
+
+The Jensen-Shannon divergence is computed from the predictive distributions:
+\[
+    \mathrm{JS}(p_a,p_b)
+    = \frac{1}{2}\mathrm{KL}(p_a \Vert m)
+    + \frac{1}{2}\mathrm{KL}(p_b \Vert m),
+    \quad
+    m = \frac{1}{2}(p_a+p_b).
+\]
+We also compute a two-member ensemble accuracy for each pair and subtract the
+mean individual accuracy to estimate an \emph{ensemble gain}. Finally, to probe
+loss-landscape connectivity, we linearly interpolate in parameter space:
+\[
+    \theta(\alpha)=(1-\alpha)\theta_a+\alpha\theta_b,\quad
+    \alpha\in[0,1],
+\]
+and report the maximum loss barrier relative to the worse endpoint loss.
+
+\section{Experimental Setup}
+
+All runs used PyTorch with Apple's Metal backend (\texttt{mps}) exposed to the
+process. The experiments are pilot-scale: they use dataset subsets and three
+random seeds per width. This is sufficient for code validation and trend
+finding, but not for statistical claims.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+Experiment & Dataset & Architecture & Widths \\
+\midrule
+MNIST MLP & MNIST & 2-hidden-layer MLP & 32, 64, 128, 256 \\
+CIFAR-10 CNN & CIFAR-10 & Small convolutional net & 16, 32, 64, 128 \\
+CIFAR-10 Patch Transformer & CIFAR-10 & ViT/DiT-style patch classifier & 64, 128, 256 \\
+\bottomrule
+\end{tabular}
+\caption{Pilot experiments. Each width was trained with three random seeds.}
+\end{table}
+
+\section{Results}
+
+\subsection{MNIST MLP}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rrrrrr}
+\toprule
+Width & Params & Acc. & Agreement & JS & Barrier \\
+\midrule
+32 & 26.5k & 88.12\% & 93.00\% & 0.0174 & 1.504 \\
+64 & 55.1k & 89.12\% & 94.32\% & 0.0144 & 0.979 \\
+128 & 118.3k & 90.93\% & 95.17\% & 0.0118 & 0.884 \\
+256 & 269.3k & 91.67\% & 93.67\% & 0.0207 & 0.784 \\
+\bottomrule
+\end{tabular}
+\caption{MNIST MLP results. Accuracy improves with parameter count. Function
+similarity improves until width 128, then weakens at width 256.}
+\end{table}
+
+The MNIST run gives the cleanest partial support for the scaling hypothesis.
+Accuracy rises monotonically, and interpolation barriers shrink substantially
+as parameter count increases. However, prediction-space similarity is not
+monotonic: agreement peaks and JS divergence is lowest at width 128.
+
+\subsection{CIFAR-10 CNN}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rrrrrr}
+\toprule
+Width & Params & Acc. & Agreement & JS & Barrier \\
+\midrule
+16 & 38.6k & 50.62\% & 71.35\% & 0.0291 & 0.660 \\
+32 & 151.9k & 51.83\% & 69.98\% & 0.0418 & 0.770 \\
+64 & 602.8k & 60.17\% & 72.48\% & 0.0494 & 0.984 \\
+128 & 2.40M & 62.47\% & 74.92\% & 0.0451 & 1.155 \\
+\bottomrule
+\end{tabular}
+\caption{CIFAR-10 CNN results. Accuracy and agreement rise at larger width, but
+linear interpolation barriers also rise.}
+\end{table}
+
+The CNN sweep suggests that accuracy scaling and mode connectivity need not
+move together. Larger CNNs are more accurate and modestly more agreement-heavy,
+but the mean maximum interpolation barrier increases. In this pilot, wider CNNs
+find better optima without becoming more linearly connected.
+
+\subsection{CIFAR-10 Patch Transformer}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rrrrrr}
+\toprule
+Width & Params & Acc. & Agreement & JS & Barrier \\
+\midrule
+64 & 208.1k & 44.08\% & 52.37\% & 0.0646 & 0.641 \\
+128 & 809.4k & 44.43\% & 46.87\% & 0.0851 & 0.619 \\
+256 & 3.19M & 40.57\% & 41.08\% & 0.0928 & 0.689 \\
+\bottomrule
+\end{tabular}
+\caption{CIFAR-10 patch-transformer results. In this short run, larger
+transformers are less similar in function space and less accurate.}
+\end{table}
+
+The patch transformer contradicts the simplest version of the hypothesis in
+this pilot. Agreement decreases and JS divergence increases with parameter
+count. The likely explanation is undertraining: transformer-style classifiers
+usually need stronger optimization, augmentation, longer schedules, and often
+larger data regimes than a small CNN.
+
+\section{Paper-Style Plots}
+
+Figure~\ref{fig:divacc} repeats the spirit of Fort et al.'s diversity-accuracy
+plane, but labels each point with width and parameter count. In that paper,
+independent initializations occupy the high-diversity/high-accuracy frontier
+relative to subspace samples. In our pilot, model family matters strongly:
+MNIST points live at high accuracy and low disagreement, CIFAR CNN points move
+toward better accuracy with moderate disagreement, and patch-transformer points
+show high disagreement but poor accuracy.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\linewidth]{../outputs/paper-plots/diversity_accuracy_plane.png}
+\caption{Diversity-accuracy plane with marker size and labels tied to
+parameter count.}
+\label{fig:divacc}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../outputs/paper-plots/similarity_vs_parameter_count.png}
+\caption{Function similarity, predictive divergence, and ensemble gain as a
+function of parameter count.}
+\label{fig:simparams}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\linewidth]{../outputs/paper-plots/linear_interpolation_barriers.png}
+\caption{Mean maximum linear interpolation barrier versus parameter count.}
+\label{fig:barriers}
+\end{figure}
+
+\section{Interpretation}
+
+The current evidence supports a more nuanced hypothesis than ``more parameters
+always imply more similar functions.'' Parameter count interacts with dataset,
+architecture, and optimization quality.
+
+\begin{itemize}
+    \item On MNIST MLP, larger models become more accurate and more linearly
+    connected, but function-space similarity is non-monotonic.
+    \item On CIFAR-10 CNN, larger models become more accurate and somewhat more
+    similar in predictions, but linear barriers increase.
+    \item On CIFAR-10 patch transformer, larger models are more diverse but not
+    more accurate, indicating that this architecture is undertrained in the
+    current pilot.
+\end{itemize}
+
+\section{Next Experiments}
+
+The next version should move closer to the Fort et al. setup:
+
+\begin{enumerate}
+    \item Use at least 10--20 random seeds per width to estimate confidence
+    intervals.
+    \item Train to matched endpoint train loss, not just fixed epochs.
+    \item Add CIFAR-10-C and SVHN to evaluate dataset shift and OOD diversity.
+    \item Add trajectory checkpoints and t-SNE plots of flattened softmax
+    predictions.
+    \item Add subspace sampling around each optimum: dropout, diagonal Gaussian,
+    low-rank Gaussian, and random directions.
+    \item For the transformer, add longer schedules, augmentation, and possibly
+    AdamW warmup/cosine decay before drawing conclusions.
+\end{enumerate}
+
+\section{Conclusion}
+
+The experiments reproduce several measurement ideas from ``Deep Ensembles: A
+Loss Landscape Perspective'' while making parameter count explicit. The most
+important observation is that function-space similarity does not scale
+universally with parameter count. Scaling can reduce loss barriers, improve
+accuracy, or increase diversity depending on architecture and optimization.
+This suggests a promising paper direction: characterize when overparameterized
+minima converge to similar functions and when they remain diverse enough for
+deep ensembles to keep providing gains.
+
+\end{document}
