@@ -61,6 +61,7 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
             for seed in tqdm(config.training.seeds, desc=f"seeds width={width}", leave=False):
                 run_index += 1
                 LOGGER.info("Run %s/%s: width=%s seed=%s", run_index, total_runs, width, seed)
+                tracker.restore_artifact(output_dir, f"checkpoints/width_{width}_seed_{seed}.pt")
                 result = train_one(config, width=width, seed=seed, output_dir=output_dir)
                 tracker.log_train_result(result)
                 train_results.append(result)
@@ -99,6 +100,7 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
                     eval_loader,
                     dataset_info,
                     device,
+                    tracker,
                 )
                 logits_cache[result.seed] = logits
                 targets_cache = targets
@@ -146,10 +148,12 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
 
         pairwise_csv = output_dir / "pairwise_similarity.csv"
         write_pairwise_results(pairwise_results, pairwise_csv)
+        tracker.log_pairwise_results(pairwise_results)
         tracker.log_artifact(pairwise_csv)
         LOGGER.info("Wrote pairwise similarity results: %s", pairwise_csv)
         interpolation_csv = output_dir / "interpolation_barriers.csv"
         write_interpolation_results(interpolation_results, interpolation_csv)
+        tracker.log_interpolation_results(interpolation_results)
         tracker.log_artifact(interpolation_csv)
         LOGGER.info("Wrote interpolation barrier results: %s", interpolation_csv)
 
@@ -167,8 +171,11 @@ def collect_or_load_logits(
     eval_loader,
     dataset_info,
     device,
+    tracker: MlflowTracker,
 ):
     cache_path = output_dir / config.cache.cache_dir / "logits" / f"width_{result.width}_seed_{result.seed}.pt"
+    artifact_path = f"{config.cache.cache_dir}/logits/width_{result.width}_seed_{result.seed}.pt"
+    tracker.restore_artifact(output_dir, artifact_path)
     if config.cache.enabled and config.cache.reuse_logits and cache_path.exists():
         LOGGER.info("Reusing cached logits: %s", cache_path)
         cached = torch.load(cache_path, map_location="cpu", weights_only=False)
@@ -180,6 +187,7 @@ def collect_or_load_logits(
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         torch.save({"logits": logits.cpu(), "targets": targets.cpu()}, cache_path)
         LOGGER.info("Cached logits: %s", cache_path)
+        tracker.log_logits(cache_path)
     return logits, targets
 
 
