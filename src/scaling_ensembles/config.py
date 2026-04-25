@@ -71,6 +71,10 @@ class TrackingConfig:
     experiment_name: str | None = None
     run_name: str | None = None
     log_artifacts: bool = True
+    log_checkpoints: bool = True
+    log_logits: bool = True
+    log_environment: bool = True
+    use_mlflow_cache: bool = True
 
 
 @dataclass(frozen=True)
