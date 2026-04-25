@@ -53,6 +53,18 @@ accuracy, function similarity versus parameter count, interpolation barriers,
 and final-minima weight/function similarity matrices. Points are labeled with
 width and parameter count.
 
+## Experiment Series
+
+The `experiments/series/` directory contains larger follow-up configs for the
+main research question:
+
+> When does overparameterization collapse functional diversity between
+> independently trained neural network minima?
+
+The series includes extended width sweeps, matched train-loss controls, dataset
+difficulty comparisons, and a longer patch-transformer schedule. See
+`experiments/series/README.md` for the full list and rationale.
+
 Open the Marimo app:
 
 ```bash
