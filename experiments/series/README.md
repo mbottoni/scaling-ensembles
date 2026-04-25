@@ -61,6 +61,28 @@ Run one config:
 scaling-ensembles-sweep --config experiments/series/cifar10_cnn_matched_train_loss.yaml
 ```
 
+All sweeps support checkpoint and logits caching through the shared `cache`
+section. This makes interrupted series runs resumable without retraining models
+or recomputing logits:
+
+```yaml
+cache:
+  enabled: true
+  reuse_checkpoints: true
+  reuse_logits: true
+  force_retrain: false
+```
+
+MLflow can be enabled per config after installing `.[tracking]`:
+
+```yaml
+tracking:
+  mlflow_enabled: true
+  tracking_uri: outputs/mlruns
+  experiment_name: scaling-ensembles-series
+  log_artifacts: true
+```
+
 Run paper-style plots after a set of sweeps:
 
 ```bash
