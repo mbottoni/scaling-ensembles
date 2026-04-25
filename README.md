@@ -42,6 +42,17 @@ output directory.
 On macOS, `device: auto` prefers PyTorch's Apple Metal backend (`mps`) before
 checking CUDA. The CIFAR-10 configs set `device: mps` explicitly.
 
+Generate paper-style plots from completed sweeps:
+
+```bash
+scaling-ensembles-paper-plots --output-root outputs
+```
+
+The plot command repeats several views from Fort et al.: diversity versus
+accuracy, function similarity versus parameter count, interpolation barriers,
+and final-minima weight/function similarity matrices. Points are labeled with
+width and parameter count.
+
 Open the Marimo app:
 
 ```bash
