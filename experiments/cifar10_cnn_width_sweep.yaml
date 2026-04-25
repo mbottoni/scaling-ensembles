@@ -1,0 +1,30 @@
+name: cifar10-cnn-width-sweep
+output_dir: outputs/cifar10-cnn-width-sweep
+
+data:
+  name: CIFAR10
+  root: data
+  batch_size: 128
+  eval_batch_size: 512
+  num_workers: 0
+  # Pilot setting. Remove these limits for paper-grade runs.
+  train_subset: 10000
+  eval_subset: 2000
+
+model:
+  architecture: cnn
+  widths: [16, 32, 64, 128]
+  hidden_layers: 2
+  activation: relu
+
+training:
+  epochs: 5
+  seeds: [0, 1, 2]
+  device: mps
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.0001
+
+similarity:
+  max_pairs_per_width:
+  interpolation_steps: 11
