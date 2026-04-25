@@ -31,10 +31,11 @@ class TrainResult:
 
 
 def resolve_device(device: str) -> torch.device:
+    if device == "mps" and not torch.backends.mps.is_available():
+        print("Requested device 'mps', but MPS is unavailable. Falling back to CPU.")
+        return torch.device("cpu")
     if device != "auto":
         return torch.device(device)
-    if torch.cuda.is_available():
-        return torch.device("cuda")
     if torch.backends.mps.is_available():
         return torch.device("mps")
     return torch.device("cpu")
