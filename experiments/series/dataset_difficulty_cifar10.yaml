@@ -25,3 +25,13 @@ training:
 similarity:
   max_pairs_per_width:
   interpolation_steps: 11
+
+tracking:
+  mlflow_enabled: true
+  tracking_uri: outputs/mlruns
+  experiment_name: scaling-ensembles-series
+  log_artifacts: true
+  log_checkpoints: true
+  log_logits: true
+  log_environment: true
+  use_mlflow_cache: true
