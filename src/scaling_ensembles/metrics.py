@@ -17,12 +17,20 @@ class PairwiseSimilarity:
     seed_b: int
     parameter_count: int
     agreement: float
+    disagreement: float
     both_wrong: float
+    error_jaccard: float
     js_divergence: float
     logit_cosine: float
     ensemble_accuracy: float
+    ensemble_nll: float
+    ensemble_brier: float
     model_a_accuracy: float
     model_b_accuracy: float
+    model_a_nll: float
+    model_b_nll: float
+    model_a_brier: float
+    model_b_brier: float
 
 
 @torch.no_grad()
@@ -56,31 +64,61 @@ def compare_predictions(
 ) -> PairwiseSimilarity:
     probs_a = logits_a.softmax(dim=1)
     probs_b = logits_b.softmax(dim=1)
+    ensemble_probs = 0.5 * (probs_a + probs_b)
     preds_a = probs_a.argmax(dim=1)
     preds_b = probs_b.argmax(dim=1)
-    ensemble_preds = (probs_a + probs_b).argmax(dim=1)
+    ensemble_preds = ensemble_probs.argmax(dim=1)
 
     model_a_correct = preds_a == targets
     model_b_correct = preds_b == targets
-    midpoint = 0.5 * (probs_a + probs_b)
+    model_a_wrong = ~model_a_correct
+    model_b_wrong = ~model_b_correct
+    both_wrong = model_a_wrong & model_b_wrong
+    either_wrong = model_a_wrong | model_b_wrong
+    midpoint = ensemble_probs
     js = 0.5 * (
         F.kl_div(midpoint.log(), probs_a, reduction="batchmean")
         + F.kl_div(midpoint.log(), probs_b, reduction="batchmean")
     )
+    agreement = (preds_a == preds_b).float().mean().item()
 
     return PairwiseSimilarity(
         width=width,
         seed_a=seed_a,
         seed_b=seed_b,
         parameter_count=parameter_count,
-        agreement=(preds_a == preds_b).float().mean().item(),
-        both_wrong=(~model_a_correct & ~model_b_correct).float().mean().item(),
+        agreement=agreement,
+        disagreement=1.0 - agreement,
+        both_wrong=both_wrong.float().mean().item(),
+        error_jaccard=safe_divide(both_wrong.sum().item(), either_wrong.sum().item()),
         js_divergence=js.item(),
         logit_cosine=F.cosine_similarity(logits_a, logits_b, dim=1).mean().item(),
         ensemble_accuracy=(ensemble_preds == targets).float().mean().item(),
+        ensemble_nll=negative_log_likelihood(ensemble_probs, targets),
+        ensemble_brier=brier_score(ensemble_probs, targets),
         model_a_accuracy=model_a_correct.float().mean().item(),
         model_b_accuracy=model_b_correct.float().mean().item(),
+        model_a_nll=negative_log_likelihood(probs_a, targets),
+        model_b_nll=negative_log_likelihood(probs_b, targets),
+        model_a_brier=brier_score(probs_a, targets),
+        model_b_brier=brier_score(probs_b, targets),
     )
+
+
+def negative_log_likelihood(probs: torch.Tensor, targets: torch.Tensor) -> float:
+    selected = probs[torch.arange(targets.numel()), targets].clamp_min(1e-12)
+    return (-selected.log()).mean().item()
+
+
+def brier_score(probs: torch.Tensor, targets: torch.Tensor) -> float:
+    one_hot = F.one_hot(targets, num_classes=probs.shape[1]).to(probs.dtype)
+    return ((probs - one_hot) ** 2).sum(dim=1).mean().item()
+
+
+def safe_divide(numerator: float, denominator: float) -> float:
+    if denominator == 0:
+        return 0.0
+    return numerator / denominator
 
 
 def write_pairwise_results(results: list[PairwiseSimilarity], path: str | Path) -> None:
