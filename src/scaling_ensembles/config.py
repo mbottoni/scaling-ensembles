@@ -24,6 +24,9 @@ class ModelConfig:
     widths: tuple[int, ...] = (32, 64, 128)
     hidden_layers: int = 2
     activation: str = "relu"
+    patch_size: int = 4
+    num_heads: int = 4
+    dropout: float = 0.0
 
 
 @dataclass(frozen=True)
