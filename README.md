@@ -15,6 +15,12 @@ cd scaling-ensembles
 python -m pip install -e .
 ```
 
+Install optional MLflow tracking support:
+
+```bash
+python -m pip install -e ".[tracking]"
+```
+
 ## First Experiment
 
 Run a small MNIST width sweep:
@@ -38,6 +44,20 @@ scaling-ensembles-sweep --config experiments/cifar10_patch_transformer_width_swe
 This trains multiple random seeds for each width, saves checkpoints, computes
 pairwise function similarity, and writes CSV summaries under the configured
 output directory.
+
+Sweeps are resumable by default. Existing checkpoints are reused, logits are
+cached under each run's output directory, and `force_retrain: true` can be set in
+the `cache` section when a clean rerun is needed.
+
+Enable MLflow in any experiment YAML:
+
+```yaml
+tracking:
+  mlflow_enabled: true
+  tracking_uri: outputs/mlruns
+  experiment_name: scaling-ensembles
+  log_artifacts: true
+```
 
 On macOS, `device: auto` prefers PyTorch's Apple Metal backend (`mps`) before
 checking CUDA. The CIFAR-10 configs set `device: mps` explicitly.
