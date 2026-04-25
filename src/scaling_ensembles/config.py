@@ -56,6 +56,24 @@ class SimilarityConfig:
 
 
 @dataclass(frozen=True)
+class CacheConfig:
+    enabled: bool = True
+    reuse_checkpoints: bool = True
+    reuse_logits: bool = True
+    force_retrain: bool = False
+    cache_dir: str = "cache"
+
+
+@dataclass(frozen=True)
+class TrackingConfig:
+    mlflow_enabled: bool = False
+    tracking_uri: str | None = None
+    experiment_name: str | None = None
+    run_name: str | None = None
+    log_artifacts: bool = True
+
+
+@dataclass(frozen=True)
 class ExperimentConfig:
     name: str = "mnist-width-sweep"
     output_dir: str = "outputs/mnist-width-sweep"
@@ -63,6 +81,8 @@ class ExperimentConfig:
     model: ModelConfig = field(default_factory=ModelConfig)
     training: TrainingConfig = field(default_factory=TrainingConfig)
     similarity: SimilarityConfig = field(default_factory=SimilarityConfig)
+    cache: CacheConfig = field(default_factory=CacheConfig)
+    tracking: TrackingConfig = field(default_factory=TrackingConfig)
 
 
 def load_config(path: str | Path) -> ExperimentConfig:
@@ -92,6 +112,8 @@ def parse_config(raw: dict[str, Any]) -> ExperimentConfig:
         }
     )
     similarity = SimilarityConfig(**raw.get("similarity", {}))
+    cache = CacheConfig(**raw.get("cache", {}))
+    tracking = TrackingConfig(**raw.get("tracking", {}))
     return ExperimentConfig(
         name=raw.get("name", default_config.name),
         output_dir=raw.get("output_dir", default_config.output_dir),
@@ -99,4 +121,6 @@ def parse_config(raw: dict[str, Any]) -> ExperimentConfig:
         model=model,
         training=training,
         similarity=similarity,
+        cache=cache,
+        tracking=tracking,
     )
