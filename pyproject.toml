@@ -17,6 +17,7 @@ dependencies = [
 [project.scripts]
 scaling-ensembles-train = "scaling_ensembles.train:main"
 scaling-ensembles-sweep = "scaling_ensembles.sweep:main"
+scaling-ensembles-paper-plots = "scaling_ensembles.paper_plots:main"
 
 [build-system]
 requires = ["hatchling"]
