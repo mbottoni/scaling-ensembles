@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import itertools
+import logging
 from collections import defaultdict
 from pathlib import Path
 
@@ -29,22 +30,42 @@ from scaling_ensembles.train import (
 )
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 def run_sweep(config_path: str | Path) -> dict[str, Path]:
     config = load_config(config_path)
     output_dir = Path(config.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
+    device = resolve_device(config.training.device)
+    LOGGER.info("Starting sweep config=%s", config_path)
+    LOGGER.info(
+        "Experiment=%s dataset=%s architecture=%s widths=%s seeds=%s epochs=%s device=%s output_dir=%s",
+        config.name,
+        config.data.name,
+        config.model.architecture,
+        list(config.model.widths),
+        list(config.training.seeds),
+        config.training.epochs,
+        device,
+        output_dir,
+    )
 
     train_results: list[TrainResult] = []
-    for width in config.model.widths:
-        for seed in config.training.seeds:
+    total_runs = len(config.model.widths) * len(config.training.seeds)
+    run_index = 0
+    for width in tqdm(config.model.widths, desc="width sweep"):
+        for seed in tqdm(config.training.seeds, desc=f"seeds width={width}", leave=False):
+            run_index += 1
+            LOGGER.info("Run %s/%s: width=%s seed=%s", run_index, total_runs, width, seed)
             result = train_one(config, width=width, seed=seed, output_dir=output_dir)
             train_results.append(result)
 
     train_csv = output_dir / "train_results.csv"
     write_train_results(train_results, train_csv)
+    LOGGER.info("Wrote training results: %s", train_csv)
 
     _, eval_loader, dataset_info = make_dataloaders(config.data)
-    device = resolve_device(config.training.device)
     by_width: dict[int, list[TrainResult]] = defaultdict(list)
     for result in train_results:
         by_width[result.width].append(result)
@@ -55,10 +76,17 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
         pairs = list(itertools.combinations(results, 2))
         if config.similarity.max_pairs_per_width is not None:
             pairs = pairs[: config.similarity.max_pairs_per_width]
+        LOGGER.info(
+            "Computing similarities for width=%s with %s checkpoints and %s pairs",
+            width,
+            len(results),
+            len(pairs),
+        )
 
         logits_cache = {}
         targets_cache = None
-        for result in results:
+        for result in tqdm(results, desc=f"logits width={width}", leave=False):
+            LOGGER.info("Collecting logits width=%s seed=%s", width, result.seed)
             model = load_checkpoint_model(result.checkpoint_path, config, dataset_info, device)
             logits, targets = collect_logits(model, eval_loader, device)
             logits_cache[result.seed] = logits
@@ -68,6 +96,12 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
             continue
 
         for result_a, result_b in tqdm(pairs, desc=f"compare width={width}", leave=False):
+            LOGGER.info(
+                "Comparing width=%s seeds=(%s,%s)",
+                width,
+                result_a.seed,
+                result_b.seed,
+            )
             pairwise_results.append(
                 compare_predictions(
                     logits_cache[result_a.seed],
@@ -80,6 +114,13 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
                 )
             )
             if config.similarity.interpolation_steps > 1:
+                LOGGER.info(
+                    "Interpolating width=%s seeds=(%s,%s) steps=%s",
+                    width,
+                    result_a.seed,
+                    result_b.seed,
+                    config.similarity.interpolation_steps,
+                )
                 interpolation_results.extend(
                     linear_interpolation_barrier(
                         result_a.checkpoint_path,
@@ -94,8 +135,10 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
 
     pairwise_csv = output_dir / "pairwise_similarity.csv"
     write_pairwise_results(pairwise_results, pairwise_csv)
+    LOGGER.info("Wrote pairwise similarity results: %s", pairwise_csv)
     interpolation_csv = output_dir / "interpolation_barriers.csv"
     write_interpolation_results(interpolation_results, interpolation_csv)
+    LOGGER.info("Wrote interpolation barrier results: %s", interpolation_csv)
 
     return {
         "train": train_csv,
@@ -105,6 +148,7 @@ def run_sweep(config_path: str | Path) -> dict[str, Path]:
 
 
 def main() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     parser = argparse.ArgumentParser(description="Run a width sweep for functional similarity.")
     parser.add_argument("--config", required=True, help="Path to a YAML experiment config.")
     args = parser.parse_args()
