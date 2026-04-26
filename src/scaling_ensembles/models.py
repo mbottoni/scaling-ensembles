@@ -41,7 +41,7 @@ class SmallCNN(nn.Module):
             nn.Conv2d(width, 2 * width, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(2),
-            nn.AdaptiveAvgPool2d((4, 4)),
+            MpsSafeAdaptiveAvgPool2d((4, 4)),
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
@@ -52,6 +52,22 @@ class SmallCNN(nn.Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.classifier(self.features(x))
+
+
+class MpsSafeAdaptiveAvgPool2d(nn.Module):
+    def __init__(self, output_size: tuple[int, int]) -> None:
+        super().__init__()
+        self.output_size = output_size
+        self.pool = nn.AdaptiveAvgPool2d(output_size)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        height, width = x.shape[-2:]
+        output_height, output_width = self.output_size
+        if x.device.type == "mps" and (
+            height % output_height != 0 or width % output_width != 0
+        ):
+            return self.pool(x.cpu()).to(x.device)
+        return self.pool(x)
 
 
 class PatchTransformerClassifier(nn.Module):
