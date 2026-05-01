@@ -18,7 +18,10 @@ SERIES_CONFIGS := \
 	experiments/series/dataset_difficulty_cifar10.yaml \
 	experiments/series/cifar10_patch_transformer_long_schedule.yaml \
 	experiments/series/cifar10_cnn_gaussian_noise_eval.yaml \
-	experiments/series/cifar10_cnn_blur_eval.yaml
+	experiments/series/cifar10_cnn_blur_eval.yaml \
+	experiments/series/cifar100_cnn_width_sweep.yaml \
+	experiments/series/svhn_cnn_width_sweep.yaml \
+	experiments/series/stl10_cnn_width_sweep.yaml
 
 .DEFAULT_GOAL := help
 

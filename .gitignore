@@ -11,3 +11,8 @@ data/
 outputs/
 *.pt
 *.pth
+
+*.aux
+*.out
+*.fls
+*.fdb*

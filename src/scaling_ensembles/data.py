@@ -90,8 +90,57 @@ def make_datasets(config: DataConfig):
         eval_dataset = datasets.CIFAR10(config.root, train=False, transform=eval_transform, download=True)
         return train, eval_dataset, DatasetInfo(input_shape=(3, 32, 32), num_classes=10)
 
+    if name in {"cifar100", "cifar-100"}:
+        train_transform = image_transform(
+            mean=(0.5071, 0.4867, 0.4408),
+            std=(0.2675, 0.2565, 0.2761),
+        )
+        eval_transform = image_transform(
+            mean=(0.5071, 0.4867, 0.4408),
+            std=(0.2675, 0.2565, 0.2761),
+            variant=config.eval_variant,
+            noise_std=config.noise_std,
+            blur_kernel_size=config.blur_kernel_size,
+        )
+        train = datasets.CIFAR100(config.root, train=True, transform=train_transform, download=True)
+        eval_dataset = datasets.CIFAR100(config.root, train=False, transform=eval_transform, download=True)
+        return train, eval_dataset, DatasetInfo(input_shape=(3, 32, 32), num_classes=100)
+
+    if name == "svhn":
+        train_transform = image_transform(
+            mean=(0.4377, 0.4438, 0.4728),
+            std=(0.1980, 0.2010, 0.1970),
+        )
+        eval_transform = image_transform(
+            mean=(0.4377, 0.4438, 0.4728),
+            std=(0.1980, 0.2010, 0.1970),
+            variant=config.eval_variant,
+            noise_std=config.noise_std,
+            blur_kernel_size=config.blur_kernel_size,
+        )
+        train = datasets.SVHN(config.root, split="train", transform=train_transform, download=True)
+        eval_dataset = datasets.SVHN(config.root, split="test", transform=eval_transform, download=True)
+        return train, eval_dataset, DatasetInfo(input_shape=(3, 32, 32), num_classes=10)
+
+    if name in {"stl10", "stl-10"}:
+        train_transform = image_transform(
+            mean=(0.4467, 0.4398, 0.4066),
+            std=(0.2603, 0.2566, 0.2713),
+        )
+        eval_transform = image_transform(
+            mean=(0.4467, 0.4398, 0.4066),
+            std=(0.2603, 0.2566, 0.2713),
+            variant=config.eval_variant,
+            noise_std=config.noise_std,
+            blur_kernel_size=config.blur_kernel_size,
+        )
+        train = datasets.STL10(config.root, split="train", transform=train_transform, download=True)
+        eval_dataset = datasets.STL10(config.root, split="test", transform=eval_transform, download=True)
+        return train, eval_dataset, DatasetInfo(input_shape=(3, 96, 96), num_classes=10)
+
     raise ValueError(
-        f"Unsupported dataset: {config.name}. Try MNIST, FashionMNIST, or CIFAR10."
+        "Unsupported dataset: "
+        f"{config.name}. Try MNIST, FashionMNIST, CIFAR10, CIFAR100, SVHN, or STL10."
     )
 
 
