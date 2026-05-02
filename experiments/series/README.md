@@ -30,10 +30,16 @@ better endpoint solutions.
 - `dataset_difficulty_mnist.yaml`
 - `dataset_difficulty_fashionmnist.yaml`
 - `dataset_difficulty_cifar10.yaml`
+- `cifar100_cnn_width_sweep.yaml`
+- `svhn_cnn_width_sweep.yaml`
+- `stl10_cnn_width_sweep.yaml`
 
 These use the same CNN width grid across increasingly difficult datasets. The
 main hypothesis is that functional diversity should collapse more readily on
-easy datasets and persist longer on harder datasets.
+easy datasets and persist longer on harder datasets. CIFAR-100, SVHN, and STL-10
+extend the ladder beyond the original MNIST/FashionMNIST/CIFAR-10 comparison;
+CIFAR-100 may require retrying the dataset download if the upstream Toronto host
+temporarily returns HTTP 503.
 
 ## 4. Transformer Training Control
 

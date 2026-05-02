@@ -11,7 +11,7 @@
 
 \title{Scaling Ensembles on Harder Data: Function-Space Similarity Across Parameter Count}
 \author{Experimental notes generated from the \texttt{scaling-ensembles} repository}
-\date{May 1, 2026}
+\date{May 2, 2026}
 
 \begin{document}
 \maketitle
@@ -25,10 +25,10 @@ random initializations explore distinct modes in function space, while
 trajectory-local subspace methods tend to remain inside one prediction-space
 mode. Here we reproduce a small subset of that experimental logic, but add
 parameter count as the main scaling axis. This version drops the MNIST result
-and focuses on harder settings: FashionMNIST, CIFAR-10, corrupted CIFAR-10
-evaluation, and a longer CIFAR-10 patch-transformer schedule. We compare
-accuracy, pairwise prediction agreement, Jensen-Shannon divergence where
-available, ensemble gain, and linear interpolation barriers.
+and focuses on harder settings: FashionMNIST, SVHN, STL-10, CIFAR-10,
+corrupted CIFAR-10 evaluation, and a longer CIFAR-10 patch-transformer schedule.
+We compare accuracy, pairwise prediction agreement, Jensen-Shannon divergence
+where available, ensemble gain, and linear interpolation barriers.
 \end{abstract}
 
 \section{Background}
@@ -113,10 +113,13 @@ and report the maximum loss barrier relative to the worse endpoint loss.
 All runs used PyTorch with Apple's Metal backend (\texttt{mps}) exposed to the
 process. This report uses completed series experiments rather than the original
 MNIST pilot. The CNN dataset-difficulty experiments use five random seeds per
-width and full training sets. The corrupted-evaluation runs train on clean
-CIFAR-10 and evaluate diversity on noisy or blurred test inputs. The
-patch-transformer run uses a longer schedule than the initial pilot, but remains
-an optimization stress test rather than a tuned vision transformer.
+width and full training sets; the newly added SVHN and STL-10 sweeps use three
+random seeds per width. The corrupted-evaluation runs train on clean CIFAR-10
+and evaluate diversity on noisy or blurred test inputs. The patch-transformer
+run uses a longer schedule than the initial pilot, but remains an optimization
+stress test rather than a tuned vision transformer. CIFAR-100 was configured as
+an additional hard dataset, but is not included in the results because the
+upstream dataset host returned HTTP 503 before training began.
 
 \begin{table}[h]
 \centering
@@ -127,6 +130,8 @@ Experiment & Dataset / Eval & Architecture & Widths \\
 \midrule
 FashionMNIST CNN & FashionMNIST & CNN & 16, 32, 64, 128 \\
 CIFAR-10 CNN & CIFAR-10 & CNN & 16, 32, 64, 128 \\
+SVHN CNN & SVHN & CNN & 16, 32, 64, 128 \\
+STL-10 CNN & STL-10 & CNN & 16, 32, 64, 128 \\
 CIFAR-10 Noise Eval & CIFAR-10 + noise & CNN & 16, 32, 64, 128, 256 \\
 CIFAR-10 Blur Eval & CIFAR-10 + blur & CNN & 16, 32, 64, 128, 256 \\
 CIFAR-10 Patch Transformer & CIFAR-10 & Patch transformer & 64, 128, 256, 512 \\
@@ -166,6 +171,37 @@ is harder and keeps substantially more functional diversity: disagreement stays
 near 24--25\%, and ensemble gain is around three percentage points. This is more
 consistent with the deep-ensemble intuition that harder problems leave room for
 independent initializations to make complementary errors.
+
+\subsection{New Dataset Sweeps: SVHN and STL-10}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llrrrrr}
+\toprule
+Dataset & Width & Params & Acc. & Agreement & Ens. Gain & Barrier \\
+\midrule
+SVHN & 16 & 38.6k & 87.52\% & 87.91\% & 1.80 pp & 1.665 \\
+SVHN & 32 & 151.9k & 89.68\% & 90.11\% & 1.42 pp & 1.653 \\
+SVHN & 64 & 602.8k & 89.65\% & 89.27\% & 1.83 pp & 1.624 \\
+SVHN & 128 & 2.40M & 88.10\% & 86.47\% & 2.44 pp & 1.585 \\
+STL-10 & 16 & 38.6k & 56.77\% & 69.74\% & 1.97 pp & 0.856 \\
+STL-10 & 32 & 151.9k & 60.96\% & 72.81\% & 2.03 pp & 0.979 \\
+STL-10 & 64 & 602.8k & 62.25\% & 72.56\% & 1.78 pp & 0.591 \\
+STL-10 & 128 & 2.40M & 63.82\% & 77.90\% & 1.25 pp & 0.056 \\
+\bottomrule
+\end{tabular}
+\caption{New completed hard-dataset sweeps. SVHN is easier than CIFAR-10 for
+this CNN, while STL-10 is harder and preserves more pairwise disagreement.}
+\end{table}
+
+SVHN reaches high accuracy quickly and behaves closer to FashionMNIST than to
+CIFAR-10: agreement is high, and ensemble gain is moderate. The widest SVHN run
+does not improve accuracy, suggesting mild overfitting or optimization
+instability at fixed schedule. STL-10 is a more useful stress test for this
+research question. Accuracy is much lower, disagreement stays above 22\% even at
+the widest setting, and interpolation barriers shrink sharply with width. This
+combination suggests that wider STL-10 CNNs become more linearly connected while
+still retaining nontrivial function-space diversity.
 
 \subsection{Corrupted CIFAR-10 Evaluation}
 
@@ -229,9 +265,10 @@ simple parameter-count effect in this regime.
 \section{Paper-Style Plots}
 
 Figure~\ref{fig:divacc} repeats the spirit of Fort et al.'s diversity-accuracy
-plane for the harder non-MNIST runs. FashionMNIST occupies the high-accuracy,
-low-diversity region; clean CIFAR-10 moves toward lower accuracy and higher
-diversity; corrupted CIFAR-10 is much more diverse but also less accurate.
+plane for the harder non-MNIST runs. FashionMNIST and SVHN occupy relatively
+high-accuracy, low-diversity regions; clean CIFAR-10 and STL-10 move toward
+lower accuracy and higher diversity; corrupted CIFAR-10 is much more diverse but
+also less accurate.
 
 \begin{figure}[h]
 \centering
@@ -266,8 +303,12 @@ least as much as parameter count.
 \begin{itemize}
     \item FashionMNIST is easy enough that independent CNNs converge to highly
     similar predictors, with little ensemble benefit.
+    \item SVHN is also high-accuracy in this setup, though the widest model
+    loses some accuracy and agreement under the fixed training schedule.
     \item Clean CIFAR-10 preserves much more diversity and meaningful ensemble
     gain even as width increases.
+    \item STL-10 is harder than SVHN and preserves substantial disagreement,
+    while its interpolation barriers shrink strongly at the widest setting.
     \item Corrupted CIFAR-10 exposes still more disagreement, especially under
     blur, showing that diversity can reappear under dataset shift.
     \item The patch transformer remains optimization-limited: width increases
@@ -283,9 +324,12 @@ The next version should make the harder-data claims more robust:
     \item Fix the numerical issue that produced missing JS-divergence rows in
     some cached pairwise metrics by clamping predictive distributions before
     KL computations, then recompute pairwise CSVs.
+    \item Retry CIFAR-100 once the upstream dataset host is available, or add a
+    maintained mirror so downloads do not block the experiment.
     \item Add true CIFAR-10-C severities rather than only one Gaussian-noise and
     one blur setting.
-    \item Add SVHN or Tiny ImageNet as a genuinely different harder dataset.
+    \item Add Tiny ImageNet as a genuinely different harder dataset once the
+    data pipeline supports non-torchvision archives.
     \item Train all widths to matched endpoint train loss to separate width from
     optimization quality.
     \item Tune the transformer with warmup, cosine decay, augmentation, and
@@ -295,11 +339,12 @@ The next version should make the harder-data claims more robust:
 \section{Conclusion}
 
 The harder non-MNIST experiments suggest that functional similarity does not
-collapse universally with parameter count. FashionMNIST already leaves little
-room for ensemble diversity, but CIFAR-10 and corrupted CIFAR-10 preserve
-substantial disagreement and ensemble gain. The strongest current conclusion is
-that overparameterization interacts with task difficulty, shift, and
-optimization. Wider models can become more similar, but harder data can keep
-independent minima functionally distinct enough for ensembles to matter.
+collapse universally with parameter count. FashionMNIST and SVHN already leave
+less room for ensemble diversity, while CIFAR-10, STL-10, and corrupted CIFAR-10
+preserve substantial disagreement and ensemble gain. The strongest current
+conclusion is that overparameterization interacts with task difficulty, shift,
+and optimization. Wider models can become more similar or more linearly
+connected, but harder data can keep independent minima functionally distinct
+enough for ensembles to matter.
 
 \end{document}
