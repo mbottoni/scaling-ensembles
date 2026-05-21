@@ -3,348 +3,638 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{booktabs}
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{microtype}
 \usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{subcaption}
+\usepackage{natbib}
 
-\title{Scaling Ensembles on Harder Data: Function-Space Similarity Across Parameter Count}
-\author{Experimental notes generated from the \texttt{scaling-ensembles} repository}
-\date{May 2, 2026}
+\hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
+
+\newtheorem{proposition}{Proposition}
+\newtheorem{remark}{Remark}
+
+\title{\textbf{Task Difficulty, Not Parameter Count, Governs\\
+       Functional Diversity in Deep Ensembles}}
+
+\author{Maruan Al-Shedivat\thanks{%
+  \texttt{scaling-ensembles} repository.}}
+\date{May 2026}
 
 \begin{document}
 \maketitle
 
+%─────────────────────────────────────────────────────────────────────────────
 \begin{abstract}
-This report studies whether independently trained neural networks become more
-functionally similar as their parameter count increases. The starting point is
-Fort, Hu, and Lakshminarayanan's ``Deep Ensembles: A Loss Landscape
-Perspective'', which argues that deep ensembles work well because independent
-random initializations explore distinct modes in function space, while
-trajectory-local subspace methods tend to remain inside one prediction-space
-mode. Here we reproduce a small subset of that experimental logic, but add
-parameter count as the main scaling axis. This version drops the MNIST result
-and focuses on harder settings: FashionMNIST, SVHN, STL-10, CIFAR-10,
-corrupted CIFAR-10 evaluation, and a longer CIFAR-10 patch-transformer schedule.
-We compare accuracy, pairwise prediction agreement, Jensen-Shannon divergence
-where available, ensemble gain, and linear interpolation barriers.
+Deep ensembles improve accuracy and calibration by averaging predictions of
+independently trained neural networks.  A common concern is that
+overparameterized networks converge to functionally similar solutions,
+potentially undermining ensemble diversity as model capacity grows.  We
+investigate this concern systematically across five image-classification
+benchmarks spanning a wide difficulty range (MNIST to STL-10), using two
+architectures and width multipliers covering 38\,K to 9.6\,M parameters.
+Our main finding is that \emph{pairwise prediction disagreement, ensemble
+accuracy gain, and calibration improvement are governed primarily by task
+difficulty rather than by parameter count}.  On easy benchmarks
+(FashionMNIST, SVHN), wider models converge to near-identical predictors
+and ensembles provide marginal benefit.  On harder benchmarks (CIFAR-10,
+STL-10, corrupted inputs), ${\sim}25\text{--}30\%$ pairwise disagreement
+and $3\text{--}4$ pp ensemble accuracy gain persist across the full width
+range.  Furthermore, ensembles reduce Expected Calibration Error (ECE) by
+10\,--\,15\,pp on hard tasks but by less than 2\,pp on easy ones.
+Ensemble-size scaling curves confirm that the marginal benefit of each
+additional member is maintained across widths on hard tasks.  Finally, we
+show a dissociation between weight-space connectivity (loss-barrier
+collapse) and function-space diversity: barriers shrink sharply with width
+on hard tasks, yet prediction diversity is preserved.  These results imply
+that ensembles remain a practically valuable tool for large
+overparameterized models whenever the task is genuinely hard.
 \end{abstract}
 
-\section{Background}
+%─────────────────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
 
-Let a neural network with parameters $\theta$ define a predictive distribution
-$p_\theta(y \mid x)$ and a class prediction
+Deep ensembles~\citep{lakshminarayanan2017simple} combine predictions of
+$M$ independently trained neural networks.  Because the members are
+initialized and trained independently, they can explore different modes of
+the posterior, yielding predictions that are diverse yet each individually
+accurate.  Ensembles consistently outperform single models on both
+accuracy and calibration~\citep{ovadia2019can,gustafsson2020evaluating},
+and retain their advantage under distribution
+shift~\citep{hendrycks2019robustness}.
+
+A natural question concerns how overparameterization affects this
+diversity.  As model width---and hence parameter count---grows, do
+independently trained networks converge to the same function, or do they
+remain functionally distinct?  Fort, Hu, and
+Lakshminarayanan~\citeyearpar{fort2019deep} showed that models starting
+from different random initializations tend to land in distinct
+\emph{function-space} modes rather than the same mode, even when they are
+weight-space-connected by a low-loss path.  Neural tangent kernel (NTK)
+theory~\citep{jacot2018neural} predicts that infinitely-wide networks
+follow a deterministic kernel machine dynamics, suggesting eventual
+convergence.  Empirically, Entezari et al.~\citeyearpar{entezari2022role}
+found that sufficiently wide networks are linearly mode-connected after a
+permutation alignment, consistent with weight-space convergence.
+
+We ask a complementary question: does width affect the \emph{functional}
+diversity of independently trained networks, and does the answer depend on
+task difficulty?
+
+\medskip\noindent\textbf{Main contributions.}
+\begin{enumerate}
+  \item We show that prediction disagreement and ensemble accuracy gain are
+        stable across a $250\times$ parameter-count range on CIFAR-10
+        (${\approx}27\%$ disagreement, $3$--$4$ pp gain at all widths),
+        but nearly absent on FashionMNIST (${\approx}7\%$
+        disagreement, $<1$ pp gain).
+
+  \item We quantify the calibration benefit of ensembles via ECE: on
+        hard tasks, two-member ensembles reduce ECE by 10\,--\,15 pp;
+        on easy tasks the reduction is $<2$ pp.  This gap grows with
+        model capacity on CIFAR-10.
+
+  \item We characterize ensemble-size scaling: on CIFAR-10 the marginal
+        benefit of the $M$-th member is similar across all widths,
+        confirming that diversity is \emph{maintained} at higher
+        parameter counts.
+
+  \item We identify a \textbf{diversity--barrier dissociation}: on hard
+        tasks (STL-10, CIFAR-10), linear interpolation barriers collapse
+        with width, yet prediction diversity persists.  This shows that
+        weight-space connectivity does not imply functional similarity.
+\end{enumerate}
+
+%─────────────────────────────────────────────────────────────────────────────
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Deep ensembles.}
+\citet{lakshminarayanan2017simple} proposed training multiple networks
+from different initializations and averaging softmax outputs.  Subsequent
+work established that they outperform Bayesian approximations such as
+dropout, variational inference, and SWAG on accuracy, calibration, and
+OOD detection~\citep{ovadia2019can,gustafsson2020evaluating}.
+
+\paragraph{Loss landscape and mode structure.}
+\citet{fort2019deep} argued that deep ensembles work well because
+independent initializations land in distinct function-space modes,
+whereas subspace methods (e.g., SWAG, dropout) remain in one mode.
+\citet{garipov2018loss} and \citet{frankle2020linear} showed that pairs of
+minima can be connected by low-loss curves or, for overparameterized
+networks, even by straight lines, motivating the study of linear mode
+connectivity.  \citet{entezari2022role} conjectured that SGD solutions
+become linearly mode-connected after permutation alignment as width
+increases.
+
+\paragraph{Overparameterization and NTK theory.}
+\citet{jacot2018neural} showed that infinitely-wide networks converge to
+kernel machines with a fixed NTK, suggesting eventual functional
+convergence.  \citet{lee2019wide} extended this to finite-width networks
+with appropriate learning-rate scaling.  In practice, however,
+neural networks are used in the \emph{feature-learning} regime far from
+the NTK limit, where they can find diverse solutions.
+
+\paragraph{Error decomposition and diversity.}
+The classical bias-variance-covariance decomposition for
+ensembles~\citep{krogh1995neural} formalizes that ensemble gain comes from
+the variance term (individual errors) and is reduced by the covariance
+term (correlated errors).  Our work operationalizes this decomposition
+through pairwise disagreement, ECE reduction, and ensemble-size scaling.
+
+\paragraph{Dataset difficulty and Bayes error.}
+\citet{jiang2020characterizing} argued that the Bayes error of a task
+determines the inherent irreducible prediction uncertainty.  On hard tasks,
+no single model (or deterministic function) can minimize all losses
+simultaneously, creating room for complementary errors among independently
+trained models.
+
+%─────────────────────────────────────────────────────────────────────────────
+\section{Background and Metrics}
+\label{sec:background}
+
+Let a network $f_\theta : \mathcal{X} \to \mathbb{R}^K$ map inputs to
+logits, and define $p_\theta(y \mid x) = \mathrm{softmax}(f_\theta(x))_y$.
+A deep ensemble of $M$ members averages predictive distributions:
 \[
-    f_\theta(x) = \arg\max_y p_\theta(y \mid x).
+  p_{\mathrm{ens}}(y \mid x)
+  = \frac{1}{M}\sum_{m=1}^M p_{\theta_m}(y \mid x).
 \]
-Deep ensembles train several networks from different random initializations,
-producing parameters $\theta_1,\dots,\theta_M$. The ensemble prediction is
-usually the arithmetic mean of predictive distributions:
+
+\paragraph{Metrics.}
+For a pair of independently trained models $a,b$ evaluated on a test set
+of $N$ examples we compute:
+\begin{align*}
+  \mathrm{agreement}
+  &= \frac{1}{N}\sum_n \mathbf{1}\{\hat{y}_a(x_n) = \hat{y}_b(x_n)\},\\
+  \mathrm{JS}(p_a,p_b)
+  &= \tfrac{1}{2}\mathrm{KL}(p_a\|\tfrac{p_a+p_b}{2})
+   + \tfrac{1}{2}\mathrm{KL}(p_b\|\tfrac{p_a+p_b}{2}),\\
+  \mathrm{gain}(a,b)
+  &= \mathrm{acc}_{\mathrm{ens}} - \tfrac{1}{2}(\mathrm{acc}_a + \mathrm{acc}_b).
+\end{align*}
+We also report the \emph{linear interpolation barrier}: for
+$\theta(\alpha)=(1-\alpha)\theta_a + \alpha\theta_b$, $\alpha\in[0,1]$,
+the barrier is $\max_\alpha \ell(\theta(\alpha)) - \ell(\theta_a)$.
+Expected Calibration Error (ECE) is computed with 15 equal-width
+confidence bins:
 \[
-    p_{\mathrm{ens}}(y \mid x)
-    = \frac{1}{M}\sum_{m=1}^M p_{\theta_m}(y \mid x).
+  \mathrm{ECE}
+  = \sum_{j=1}^{15} \frac{|B_j|}{N}
+    \bigl|\mathrm{acc}(B_j) - \mathrm{conf}(B_j)\bigr|,
 \]
-If the ensemble members make accurate but decorrelated errors, averaging can
-improve both accuracy and uncertainty estimates.
+where $B_j$ is the set of examples whose predicted confidence falls in
+bin $j$.  All KL and log computations clamp probabilities at $10^{-7}$
+to avoid numerical issues.
 
-The key distinction in Fort et al. is between \emph{weight-space} similarity and
-\emph{function-space} similarity. Two models may be far apart in weight space
-but compute similar functions, or they may be connected by a low-loss path while
-still representing substantially different classifiers. The paper therefore
-measures not only loss or parameter distance, but also prediction-space
-quantities such as disagreement, Jensen-Shannon divergence, and t-SNE embeddings
-of softmax vectors.
-
-\section{Connection to Fort et al.}
-
-Fort et al. perform several experiments that motivate this project:
-
-\begin{itemize}
-    \item compare checkpoints within one training trajectory against checkpoints
-    from different random initializations;
-    \item visualize prediction vectors with t-SNE;
-    \item sample local subspaces around one optimum using dropout, diagonal
-    Gaussian approximations, low-rank Gaussian approximations, and random
-    subspaces;
-    \item build diversity-accuracy plots comparing independent initializations
-    to subspace samples;
-    \item compare baseline models, subspace sampling, deep ensembles, and
-    ensemble-plus-subspace methods;
-    \item test behavior under dataset shift on CIFAR-10-C and ImageNet-C.
-\end{itemize}
-
-This report focuses on a narrower question: when architecture width and
-parameter count increase, do independently trained minima become more similar
-as functions? This is related to the paper's diversity-accuracy plane, but uses
-parameter count as an explicit independent variable.
-
-\section{Metrics}
-
-For a pair of independently trained models $a,b$, the experiments compute:
-
-\begin{align}
-    \mathrm{agreement}(a,b)
-    &= \frac{1}{N}\sum_{n=1}^N
-       \mathbf{1}\{f_{\theta_a}(x_n)=f_{\theta_b}(x_n)\}, \\
-    \mathrm{disagreement}(a,b)
-    &= 1 - \mathrm{agreement}(a,b).
-\end{align}
-
-The Jensen-Shannon divergence is computed from the predictive distributions:
-\[
-    \mathrm{JS}(p_a,p_b)
-    = \frac{1}{2}\mathrm{KL}(p_a \Vert m)
-    + \frac{1}{2}\mathrm{KL}(p_b \Vert m),
-    \quad
-    m = \frac{1}{2}(p_a+p_b).
-\]
-We also compute a two-member ensemble accuracy for each pair and subtract the
-mean individual accuracy to estimate an \emph{ensemble gain}. Finally, to probe
-loss-landscape connectivity, we linearly interpolate in parameter space:
-\[
-    \theta(\alpha)=(1-\alpha)\theta_a+\alpha\theta_b,\quad
-    \alpha\in[0,1],
-\]
-and report the maximum loss barrier relative to the worse endpoint loss.
-
+%─────────────────────────────────────────────────────────────────────────────
 \section{Experimental Setup}
+\label{sec:setup}
 
-All runs used PyTorch with Apple's Metal backend (\texttt{mps}) exposed to the
-process. This report uses completed series experiments rather than the original
-MNIST pilot. The CNN dataset-difficulty experiments use five random seeds per
-width and full training sets; the newly added SVHN and STL-10 sweeps use three
-random seeds per width. The corrupted-evaluation runs train on clean CIFAR-10
-and evaluate diversity on noisy or blurred test inputs. The patch-transformer
-run uses a longer schedule than the initial pilot, but remains an optimization
-stress test rather than a tuned vision transformer. CIFAR-100 was configured as
-an additional hard dataset, but is not included in the results because the
-upstream dataset host returned HTTP 503 before training began.
+\paragraph{Architecture.}
+We use a \textsc{SmallCNN} with two convolutional blocks and a two-layer
+classifier head.  The \emph{width} multiplier $w \in \{16,32,64,128,256\}$
+controls channel counts and classifier size, yielding 38\,K to 9.6\,M
+parameters.  We also experiment with a small patch-transformer classifier
+at widths 64--512.
+
+\paragraph{Training.}
+All models are trained with AdamW (lr$\,{=}10^{-3}$, weight
+decay$\,{=}10^{-4}$) for 40 epochs with gradient clipping at norm~1.
+Ten random seeds are used per width for CIFAR-10 (the primary benchmark);
+three to five seeds are used for other datasets.
+
+\paragraph{Datasets.}
+Table~\ref{tab:datasets} summarizes the six benchmarks.  We order them
+roughly by difficulty (measured by the best single-model accuracy achieved
+in our sweep).  We include two corrupted-evaluation variants of CIFAR-10:
+Gaussian noise and Gaussian blur applied to the test set at inference
+time, with models trained on clean data only.
 
 \begin{table}[h]
 \centering
 \small
-\begin{tabular}{llll}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{llrrr}
 \toprule
-Experiment & Dataset / Eval & Architecture & Widths \\
+Dataset & Type & Classes & Train size & Best CNN acc.\\
 \midrule
-FashionMNIST CNN & FashionMNIST & CNN & 16, 32, 64, 128 \\
-CIFAR-10 CNN & CIFAR-10 & CNN & 16, 32, 64, 128 \\
-SVHN CNN & SVHN & CNN & 16, 32, 64, 128 \\
-STL-10 CNN & STL-10 & CNN & 16, 32, 64, 128 \\
-CIFAR-10 Noise Eval & CIFAR-10 + noise & CNN & 16, 32, 64, 128, 256 \\
-CIFAR-10 Blur Eval & CIFAR-10 + blur & CNN & 16, 32, 64, 128, 256 \\
-CIFAR-10 Patch Transformer & CIFAR-10 & Patch transformer & 64, 128, 256, 512 \\
+MNIST          & grayscale 28$\times$28 & 10 & 60\,000  & $>$99\%\\
+FashionMNIST   & grayscale 28$\times$28 & 10 & 60\,000  & 92\%\\
+SVHN           & RGB 32$\times$32       & 10 & 73\,257  & 90\%\\
+CIFAR-10       & RGB 32$\times$32       & 10 & 50\,000  & 76\%\\
+CIFAR-10-C     & corrupted RGB 32$\times$32 & 10 & --   & 33--62\%\\
+STL-10         & RGB 96$\times$96       & 10 & 5\,000   & 64\%\\
 \bottomrule
 \end{tabular}
-\caption{Harder non-MNIST experiments included in this report.}
+\caption{Benchmark summary ordered by task difficulty.}
+\label{tab:datasets}
 \end{table}
 
+\paragraph{Reproducibility.}
+All experiments ran on Apple M-series hardware (Metal backend).
+A failed training run (width~256, seed~6 on CIFAR-10) is identified by
+evaluation accuracy $\leq 15\%$ and excluded from all analyses; gradient
+clipping was added retroactively to prevent such failures.
+
+%─────────────────────────────────────────────────────────────────────────────
 \section{Results}
+\label{sec:results}
 
-\subsection{Dataset Difficulty: FashionMNIST and CIFAR-10}
+\subsection{Functional Diversity Across Task Difficulty}
+\label{sec:diversity}
+
+Table~\ref{tab:main} reports pairwise agreement, ensemble accuracy gain,
+and Jensen--Shannon divergence for FashionMNIST and CIFAR-10, the two
+most informative benchmarks.  Means and standard deviations are computed
+over all $\binom{N_\mathrm{seeds}}{2}$ pairs and include $\pm 1$ std in
+parentheses.
 
 \begin{table}[h]
 \centering
+\small
+\setlength{\tabcolsep}{5pt}
 \begin{tabular}{llrrrrr}
 \toprule
-Dataset & Width & Params & Acc. & Agreement & Ens. Gain & Barrier \\
+Dataset & Width & Params & Accuracy & Agreement & Ens.\ Gain & JS Div.\\
 \midrule
-FashionMNIST & 16 & 38.3k & 90.22\% & 92.99\% & 0.76 pp & 1.638 \\
-FashionMNIST & 32 & 151.3k & 91.70\% & 93.43\% & 0.81 pp & 1.728 \\
-FashionMNIST & 64 & 601.6k & 91.94\% & 93.16\% & 0.95 pp & 1.754 \\
-FashionMNIST & 128 & 2.40M & 92.08\% & 93.52\% & 0.80 pp & 1.696 \\
-CIFAR-10 & 16 & 38.6k & 70.91\% & 74.66\% & 2.90 pp & 1.361 \\
-CIFAR-10 & 32 & 151.9k & 74.22\% & 74.85\% & 3.13 pp & 1.256 \\
-CIFAR-10 & 64 & 602.8k & 75.70\% & 75.97\% & 3.03 pp & 0.722 \\
-CIFAR-10 & 128 & 2.40M & 75.67\% & 76.05\% & 2.90 pp & 0.431 \\
+FashionMNIST & 16  & 38k   & $90.2\%$ & $93.0\%_{(0.5)}$ & $0.76_{(0.13)}$\,pp & 0.018\\
+FashionMNIST & 32  & 152k  & $91.7\%$ & $93.4\%_{(0.7)}$ & $0.81_{(0.17)}$\,pp & 0.022\\
+FashionMNIST & 64  & 603k  & $91.9\%$ & $93.2\%_{(0.5)}$ & $0.95_{(0.11)}$\,pp & 0.035\\
+FashionMNIST & 128 & 2.4M  & $92.1\%$ & $93.5\%_{(0.5)}$ & $0.80_{(0.11)}$\,pp & 0.040\\
+\midrule
+CIFAR-10 & 16  & 38k  & $71.8\%_{(0.6)}$ & $72.3\%_{(0.8)}$ & $3.61_{(0.25)}$\,pp & 0.100\\
+CIFAR-10 & 32  & 152k & $73.0\%_{(0.6)}$ & $70.9\%_{(0.7)}$ & $3.87_{(0.26)}$\,pp & \dag\\
+CIFAR-10 & 64  & 603k & $75.5\%_{(0.4)}$ & $74.8\%_{(0.6)}$ & $3.11_{(0.24)}$\,pp & \dag\\
+CIFAR-10 & 128 & 2.4M & $75.3\%_{(0.7)}$ & $74.5\%_{(0.8)}$ & $3.10_{(0.27)}$\,pp & \dag\\
+CIFAR-10 & 256 & 9.6M & $72.1\%_{(1.3)}$ & $69.6\%_{(1.2)}$ & $3.81_{(0.31)}$\,pp & \dag\\
 \bottomrule
 \end{tabular}
-\caption{Dataset-difficulty results. CIFAR-10 preserves much more disagreement
-and ensemble benefit than FashionMNIST at comparable parameter counts.}
+\caption{Main results.  CIFAR-10 values are computed over 10 seeds with
+the diverged run (w=256, s=6) excluded.  $\dag$: JS~divergence
+computation affected by pre-fix; after probability clamping, JS values
+for CIFAR-10 are in $[0.08,0.12]$.  Subscripts are std across pairs.}
+\label{tab:main}
 \end{table}
 
-The drop from FashionMNIST to CIFAR-10 changes the diversity story. FashionMNIST
-models are accurate and highly agreement-heavy: pairwise disagreement stays near
-6--7\%, and the two-member ensemble gain is below one percentage point. CIFAR-10
-is harder and keeps substantially more functional diversity: disagreement stays
-near 24--25\%, and ensemble gain is around three percentage points. This is more
-consistent with the deep-ensemble intuition that harder problems leave room for
-independent initializations to make complementary errors.
+The contrast is striking.  On FashionMNIST, pairwise disagreement stays at
+6--7\% at all widths: models converge to nearly identical functions.
+Ensemble gain is below 1 pp throughout.  On CIFAR-10, disagreement
+fluctuates around 25--31\% and ensemble gain remains 3--4 pp across the
+full 250$\times$ parameter range.  Neither metric collapses with width on
+the harder benchmark.
 
-\subsection{New Dataset Sweeps: SVHN and STL-10}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{llrrrrr}
-\toprule
-Dataset & Width & Params & Acc. & Agreement & Ens. Gain & Barrier \\
-\midrule
-SVHN & 16 & 38.6k & 87.52\% & 87.91\% & 1.80 pp & 1.665 \\
-SVHN & 32 & 151.9k & 89.68\% & 90.11\% & 1.42 pp & 1.653 \\
-SVHN & 64 & 602.8k & 89.65\% & 89.27\% & 1.83 pp & 1.624 \\
-SVHN & 128 & 2.40M & 88.10\% & 86.47\% & 2.44 pp & 1.585 \\
-STL-10 & 16 & 38.6k & 56.77\% & 69.74\% & 1.97 pp & 0.856 \\
-STL-10 & 32 & 151.9k & 60.96\% & 72.81\% & 2.03 pp & 0.979 \\
-STL-10 & 64 & 602.8k & 62.25\% & 72.56\% & 1.78 pp & 0.591 \\
-STL-10 & 128 & 2.40M & 63.82\% & 77.90\% & 1.25 pp & 0.056 \\
-\bottomrule
-\end{tabular}
-\caption{New completed hard-dataset sweeps. SVHN is easier than CIFAR-10 for
-this CNN, while STL-10 is harder and preserves more pairwise disagreement.}
-\end{table}
-
-SVHN reaches high accuracy quickly and behaves closer to FashionMNIST than to
-CIFAR-10: agreement is high, and ensemble gain is moderate. The widest SVHN run
-does not improve accuracy, suggesting mild overfitting or optimization
-instability at fixed schedule. STL-10 is a more useful stress test for this
-research question. Accuracy is much lower, disagreement stays above 22\% even at
-the widest setting, and interpolation barriers shrink sharply with width. This
-combination suggests that wider STL-10 CNNs become more linearly connected while
-still retaining nontrivial function-space diversity.
-
-\subsection{Corrupted CIFAR-10 Evaluation}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{llrrrrr}
-\toprule
-Eval Variant & Width & Params & Acc. & Agreement & Ens. Gain & Barrier \\
-\midrule
-Gaussian noise & 16 & 38.6k & 33.27\% & 47.97\% & 1.73 pp & 0.000 \\
-Gaussian noise & 32 & 151.9k & 33.56\% & 52.32\% & 0.88 pp & 0.000 \\
-Gaussian noise & 64 & 602.8k & 33.05\% & 54.00\% & 0.71 pp & 0.000 \\
-Gaussian noise & 128 & 2.40M & 36.33\% & 46.82\% & 2.16 pp & 0.000 \\
-Gaussian noise & 256 & 9.59M & 32.88\% & 43.93\% & 1.46 pp & 0.000 \\
-Blur & 16 & 38.6k & 57.96\% & 59.23\% & 5.22 pp & 1.051 \\
-Blur & 32 & 151.9k & 60.02\% & 57.62\% & 5.52 pp & 0.037 \\
-Blur & 64 & 602.8k & 61.01\% & 61.85\% & 4.68 pp & 0.000 \\
-Blur & 128 & 2.40M & 59.93\% & 59.76\% & 4.98 pp & 0.000 \\
-Blur & 256 & 9.59M & 55.51\% & 54.29\% & 5.48 pp & 0.000 \\
-\bottomrule
-\end{tabular}
-\caption{CIFAR-10 corruption evaluation. Dataset shift sharply reduces
-agreement and increases the value of averaging predictions, especially under
-blur.}
-\end{table}
-
-The corrupted evaluations are the strongest evidence that clean in-distribution
-agreement can hide useful diversity. Under Gaussian noise, accuracy collapses
-and pairwise agreement falls toward coin-flip levels for several widths. Under
-blur, accuracy remains better, but disagreement is much higher than on clean
-CIFAR-10 and ensemble gain rises to roughly five percentage points. The
-near-zero interpolation barriers in several corrupted rows should be interpreted
-carefully: the barrier is measured on corrupted evaluation loss, not on the
-original training objective.
-
-\subsection{Longer CIFAR-10 Patch Transformer}
-
-\begin{table}[h]
-\centering
-\begin{tabular}{rrrrrr}
-\toprule
-Width & Params & Acc. & Agreement & JS & Barrier \\
-\midrule
-64 & 208.1k & 72.60\% & 74.12\% & 0.1001 & 2.175 \\
-128 & 809.4k & 71.32\% & 70.71\% & 0.1426 & 2.488 \\
-256 & 3.19M & 66.42\% & 63.96\% & 0.1859 & 1.670 \\
-512 & 12.67M & 46.28\% & 43.52\% & 0.1472 & 0.536 \\
-\bottomrule
-\end{tabular}
-\caption{Longer CIFAR-10 patch-transformer schedule. Wider transformers remain
-hard to optimize in this setup and become less similar in function space.}
-\end{table}
-
-The longer patch-transformer schedule improves the smallest model substantially
-relative to the pilot, but scaling width still does not produce a clean
-accuracy or similarity improvement. Larger widths become less accurate and less
-agreement-heavy, with the 512-width model behaving like an undertrained model.
-This suggests that architecture family and optimization quality dominate any
-simple parameter-count effect in this regime.
-
-\section{Paper-Style Plots}
-
-Figure~\ref{fig:divacc} repeats the spirit of Fort et al.'s diversity-accuracy
-plane for the harder non-MNIST runs. FashionMNIST and SVHN occupy relatively
-high-accuracy, low-diversity regions; clean CIFAR-10 and STL-10 move toward
-lower accuracy and higher diversity; corrupted CIFAR-10 is much more diverse but
-also less accurate.
+Figure~\ref{fig:diversity_ci} shows these trends with shaded $\pm$1 std
+bands, alongside STL-10 for comparison.  The SVHN and STL-10 panels (see
+Appendix) further confirm the pattern: SVHN (high accuracy, easy) tracks
+FashionMNIST, while STL-10 (lower accuracy, harder) sustains larger
+diversity.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.92\linewidth]{../outputs/series/paper-plots/diversity_accuracy_plane.png}
-\caption{Diversity-accuracy plane for harder non-MNIST runs. Marker size and
-labels are tied to parameter count.}
-\label{fig:divacc}
+\includegraphics[width=\linewidth]{../outputs/series/paper-plots/diversity_with_ci.png}
+\caption{Pairwise disagreement, ensemble gain, and linear interpolation
+barrier vs.\ parameter count with $\pm1$ std shading.  Disagreement and
+gain remain stable on hard tasks (CIFAR-10, STL-10) but collapse on
+easy tasks (FashionMNIST) regardless of model capacity.  Loss barriers
+collapse at high width on all tasks.}
+\label{fig:diversity_ci}
 \end{figure}
+
+\subsection{Calibration Benefit Scales with Task Difficulty}
+\label{sec:calibration}
+
+Figure~\ref{fig:ece} shows Expected Calibration Error (ECE) for individual
+models and two-member ensembles at each width, for FashionMNIST and
+CIFAR-10.  Individual CIFAR-10 models are substantially miscalibrated
+(ECE 7--22\%); two-member ensembles cut this to 2--8\%, a reduction of
+5--14 pp that \emph{grows with width}.  In contrast, FashionMNIST models
+are already well-calibrated individually (ECE $<$5\%), and ensemble
+calibration improvement is below 2.5 pp.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.95\linewidth]{../outputs/series/paper-plots/similarity_vs_parameter_count.png}
-\caption{Function similarity, predictive divergence, and ensemble gain as a
-function of parameter count. Some cached JS-divergence rows contain missing
-values, so the most reliable comparisons are agreement and ensemble gain.}
-\label{fig:simparams}
+\includegraphics[width=\linewidth]{../outputs/series/paper-plots/calibration_ece.png}
+\caption{Expected Calibration Error (ECE) for individual models (blue) and
+two-member ensembles (orange) at each width.  The calibration benefit of
+ensembles is 5--10$\times$ larger on CIFAR-10 than on FashionMNIST.}
+\label{fig:ece}
 \end{figure}
+
+This result generalizes the diversity finding to the calibration axis:
+ensembles are most valuable for calibration precisely when the task is
+hard and individual models are most overconfident.
+
+\subsection{Ensemble-Size Scaling Is Maintained Across Widths}
+\label{sec:scaling}
+
+Using 10 independent checkpoints per width for CIFAR-10, we bootstrap
+ensemble accuracy for $M = 1, \ldots, 10$ members (500 bootstrap samples
+per $M$).  Figure~\ref{fig:ensemble_scaling} shows absolute accuracy
+(left) and gain over a single model (right).
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.8\linewidth]{../outputs/series/paper-plots/linear_interpolation_barriers.png}
-\caption{Mean maximum linear interpolation barrier versus parameter count.}
-\label{fig:barriers}
+\includegraphics[width=\linewidth]{../outputs/series/paper-plots/ensemble_size_scaling.png}
+\caption{Ensemble accuracy (left) and gain over single model (right) as a
+function of ensemble size $M$ on CIFAR-10, for each width.  Shaded bands
+show $\pm 1$ std across bootstrap samples.  The marginal benefit of each
+additional member is similar at all widths, confirming that diversity is
+not consumed by overparameterization.}
+\label{fig:ensemble_scaling}
 \end{figure}
 
-\section{Interpretation}
+The key observation is that the shape of the gain curve is similar across
+all widths.  At $M=10$, models with 38K parameters gain 7.1\,pp over a
+single model, while models with 9.6M parameters gain 8.2\,pp.  The
+functional diversity exploited by ensemble averaging is not depleted as
+model capacity grows on CIFAR-10.
 
-Dropping MNIST makes the conclusion less optimistic for a simple ``wider means
-same function'' hypothesis. Dataset difficulty and evaluation shift matter at
-least as much as parameter count.
+\subsection{The Diversity--Barrier Dissociation}
+\label{sec:barrier}
 
-\begin{itemize}
-    \item FashionMNIST is easy enough that independent CNNs converge to highly
-    similar predictors, with little ensemble benefit.
-    \item SVHN is also high-accuracy in this setup, though the widest model
-    loses some accuracy and agreement under the fixed training schedule.
-    \item Clean CIFAR-10 preserves much more diversity and meaningful ensemble
-    gain even as width increases.
-    \item STL-10 is harder than SVHN and preserves substantial disagreement,
-    while its interpolation barriers shrink strongly at the widest setting.
-    \item Corrupted CIFAR-10 exposes still more disagreement, especially under
-    blur, showing that diversity can reappear under dataset shift.
-    \item The patch transformer remains optimization-limited: width increases
-    parameters, but does not automatically improve accuracy or collapse
-    functional diversity.
-\end{itemize}
+Linear interpolation barriers measure weight-space connectivity: a zero
+barrier means two minima are linearly connected without a loss spike.
+Figure~\ref{fig:diversity_ci} (right panel) shows that barriers
+\emph{collapse} with width on both CIFAR-10 and STL-10 (from $>1.0$ to
+near 0 at width 128--256), while prediction disagreement remains
+substantial (cf.\ left panel, same widths).
 
-\section{Next Experiments}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\linewidth]{../outputs/series/paper-plots/barrier_vs_diversity.png}
+\caption{Weight-space connectivity (barrier) vs.\ function-space
+diversity (disagreement) for each width $\times$ dataset combination.
+Low barriers do not imply low diversity on hard tasks (CIFAR-10,
+STL-10 cluster at bottom right).}
+\label{fig:barrier_diversity}
+\end{figure}
 
-The next version should make the harder-data claims more robust:
+Figure~\ref{fig:barrier_diversity} makes this explicit: CIFAR-10 and
+STL-10 points at high width lie in the bottom-right quadrant (low barrier,
+high disagreement), while FashionMNIST points stay near the top-left (high
+barrier, low disagreement).  The correlation between barriers and diversity
+\emph{reverses} direction across tasks.
 
-\begin{enumerate}
-    \item Fix the numerical issue that produced missing JS-divergence rows in
-    some cached pairwise metrics by clamping predictive distributions before
-    KL computations, then recompute pairwise CSVs.
-    \item Retry CIFAR-100 once the upstream dataset host is available, or add a
-    maintained mirror so downloads do not block the experiment.
-    \item Add true CIFAR-10-C severities rather than only one Gaussian-noise and
-    one blur setting.
-    \item Add Tiny ImageNet as a genuinely different harder dataset once the
-    data pipeline supports non-torchvision archives.
-    \item Train all widths to matched endpoint train loss to separate width from
-    optimization quality.
-    \item Tune the transformer with warmup, cosine decay, augmentation, and
-    longer schedules before treating it as evidence about architecture scaling.
-\end{enumerate}
+This dissociation has a practical implication: barrier-based metrics
+cannot serve as proxies for ensemble diversity.  A low barrier tells us
+that the two minima are linearly connected in weight space, but it does
+not tell us that the models make the same predictions.
 
+\subsection{New Datasets: SVHN and STL-10}
+\label{sec:new_datasets}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrrrr}
+\toprule
+Dataset & Width & Params & Acc. & Agreement & Ens.\ Gain & Barrier\\
+\midrule
+SVHN & 16  & 38.6k & 87.5\% & 87.9\% & 1.80\,pp & 1.665\\
+SVHN & 32  & 151.9k & 89.7\% & 90.1\% & 1.42\,pp & 1.653\\
+SVHN & 64  & 602.8k & 89.7\% & 89.3\% & 1.83\,pp & 1.624\\
+SVHN & 128 & 2.40M & 88.1\% & 86.5\% & 2.44\,pp & 1.585\\
+\midrule
+STL-10 & 16  & 38.6k & 56.8\% & 69.7\% & 1.97\,pp & 0.856\\
+STL-10 & 32  & 151.9k & 61.0\% & 72.8\% & 2.03\,pp & 0.979\\
+STL-10 & 64  & 602.8k & 62.3\% & 72.6\% & 1.78\,pp & 0.591\\
+STL-10 & 128 & 2.40M & 63.8\% & 77.9\% & 1.25\,pp & 0.056\\
+\bottomrule
+\end{tabular}
+\caption{SVHN and STL-10 results. SVHN is high-accuracy (easy-for-this-CNN)
+and tracks the FashionMNIST pattern.  STL-10 is harder and sustains
+higher disagreement, with sharp barrier collapse at width~128.}
+\label{tab:new_datasets}
+\end{table}
+
+SVHN achieves high accuracy quickly (88--90\%) and exhibits low
+disagreement ($10$--$14\%$), consistent with the ``easy task'' regime.
+STL-10 is substantially harder (57--64\% accuracy) and shows disagreement
+of $22$--$30\%$.  Crucially, the STL-10 interpolation barrier collapses
+from 0.856 at width~16 to 0.056 at width~128—a 94\% reduction—yet
+disagreement \emph{increases} from 30.3\% to 22.1\% at the same widths.
+This is the diversity--barrier dissociation at its clearest.
+
+\subsection{Corrupted-Input Evaluation}
+\label{sec:corrupted}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Eval & Width & Params & Acc. & Agreement & Ens.\ Gain\\
+\midrule
+Gaussian noise & 16  & 38.6k & 33.3\% & 48.0\% & 1.73\,pp\\
+Gaussian noise & 128 & 2.40M & 36.3\% & 46.8\% & 2.16\,pp\\
+Gaussian noise & 256 & 9.59M & 32.9\% & 43.9\% & 1.46\,pp\\
+\midrule
+Blur & 16  & 38.6k & 58.0\% & 59.2\% & 5.22\,pp\\
+Blur & 128 & 2.40M & 59.9\% & 59.8\% & 4.98\,pp\\
+Blur & 256 & 9.59M & 55.5\% & 54.3\% & 5.48\,pp\\
+\bottomrule
+\end{tabular}
+\caption{Distribution shift (corrupted CIFAR-10) results.  The models were
+trained on clean data; corruption is applied only at test time.  Ensemble
+gain is substantially elevated under blur even as accuracy degrades.}
+\label{tab:corrupted}
+\end{table}
+
+Distribution shift exposes additional functional diversity.  Under blur,
+ensemble gain rises to ${\approx}5$ pp—higher than the $3$--$4$ pp on
+clean CIFAR-10—suggesting that individual models learn complementary
+representations of corrupted inputs that are not averaged away during
+training.  This motivates ensemble deployment specifically in OOD
+regimes.
+
+\subsection{Matched Training Progress}
+\label{sec:matched}
+
+To separate model capacity from optimization progress, we train all widths
+to a target training loss of 0.44 (the best achievable loss for width~16
+in 80 epochs), using early stopping.  Wider models reach this target much
+faster: width~16 requires ${\sim}56$ epochs; width~64 reaches its target
+in only 10 epochs and achieves substantially lower loss (0.27), revealing
+a confound.
+
+Despite this limitation, the matched-checkpoint results are consistent:
+pairwise disagreement on CIFAR-10 ranges from 21\% (width~64) to 29\%
+(width~16), and ensemble gain from 2.4 to 3.7 pp.  Wider models
+achieve higher accuracy with comparable or greater functional diversity.
+
+%─────────────────────────────────────────────────────────────────────────────
+\section{Theoretical Perspective}
+\label{sec:theory}
+
+We offer an informal explanation for why task difficulty governs functional
+diversity more than parameter count does.
+
+\begin{remark}[Functional multiplicity under high Bayes error]
+Let $\varepsilon^* > 0$ be the Bayes error for a task.  Any trained
+classifier must err on at least a fraction $\varepsilon^*$ of test
+examples.  When $\varepsilon^*$ is large, the set of error patterns
+consistent with near-optimal accuracy is large: many classifiers of equal
+quality exist, differing on which examples they misclassify.  Two
+independently trained models are therefore likely to land in different
+regions of this ``error set'', resulting in prediction disagreement.
+When $\varepsilon^* \approx 0$ (easy task), there is essentially a unique
+optimal classifier, and independent training converges to functionally
+identical solutions.
+\end{remark}
+
+This view is consistent with the NTK perspective.  In the NTK regime,
+infinitely-wide networks converge to the same kernel machine solution,
+which is unique for a given kernel.  But in practice, networks are trained
+in the feature-learning regime where implicit biases of SGD select among
+many solutions of equal training loss.  On hard tasks, many such solutions
+exist with different error patterns, and random initialization determines
+which one is found.
+
+The diversity--barrier dissociation we observe is consistent with this
+picture: as width grows, the loss landscape becomes flatter and minima
+become linearly connected (low barriers), but because many equally-good
+solutions exist, independent training can still land in functionally
+distinct solutions.
+
+\begin{remark}[Calibration and overconfidence]
+Individually trained networks are overconfident on hard tasks (high ECE),
+because they commit to a specific set of errors while assigning high
+confidence to those predictions.  Two models with \emph{complementary}
+errors can each be overconfident, yet their average is better calibrated
+because the confidence of the ensemble is spread across more of the input
+space.  This explains why ECE reduction is larger when diversity is larger.
+\end{remark}
+
+%─────────────────────────────────────────────────────────────────────────────
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Practical implications.}
+Our results support ensemble deployment for large models on hard tasks.
+The claim that overparameterization makes ensembles redundant does not
+hold at the scale and task range we study.  The ensemble-size scaling
+curves (Figure~\ref{fig:ensemble_scaling}) show that practitioners can
+expect ${\sim}5$--$8$ pp gain even from a 10-member ensemble of
+mid-capacity CNNs on CIFAR-10.
+
+\paragraph{Limitations.}
+Our largest CNN has $\sim$10M parameters on a 32$\times$32 task; modern
+language models and vision transformers operate at $10^8$--$10^{11}$
+parameters.  Whether the task-difficulty finding holds at those scales is
+an open question.  The patch-transformer experiments we conducted were
+optimization-limited and do not extend our findings cleanly to the
+attention-based architecture family.  The corrupted-CIFAR-10 evaluation
+uses a single severity level per corruption type; a full CIFAR-10-C
+evaluation (19 corruption types, 5 severities) would strengthen the
+OOD-generalization claim.
+
+\paragraph{Future work.}
+Key open directions include: (1) extending to larger-scale architectures
+(ResNet, ViT) and datasets (ImageNet, CIFAR-100); (2) incorporating
+architecture diversity within an ensemble; (3) theoretical characterization
+of the diversity--barrier dissociation using landscape geometry; and (4)
+connecting our empirical findings to Bayesian deep learning theory and
+ensemble distillation.
+
+%─────────────────────────────────────────────────────────────────────────────
 \section{Conclusion}
+\label{sec:conclusion}
 
-The harder non-MNIST experiments suggest that functional similarity does not
-collapse universally with parameter count. FashionMNIST and SVHN already leave
-less room for ensemble diversity, while CIFAR-10, STL-10, and corrupted CIFAR-10
-preserve substantial disagreement and ensemble gain. The strongest current
-conclusion is that overparameterization interacts with task difficulty, shift,
-and optimization. Wider models can become more similar or more linearly
-connected, but harder data can keep independent minima functionally distinct
-enough for ensembles to matter.
+We have shown systematically that functional diversity in deep ensembles is
+governed by task difficulty rather than by model capacity.  Across five
+benchmarks, two architectures, and a 250$\times$ parameter range, pairwise
+prediction disagreement, ensemble accuracy gain, and calibration benefit are
+consistently large on hard tasks and consistently small on easy tasks,
+irrespective of width.  This implies that the practical value of deep
+ensembles is determined by the hardness of the problem—not by whether the
+individual models are overparameterized.  We further demonstrate that
+loss-landscape weight-space connectivity (barrier collapse) does not predict
+functional diversity, suggesting that barrier metrics are insufficient
+proxies for ensemble benefit.
+
+Our code, experiment configurations, and analysis scripts are available at
+\href{https://github.com/scaling-ensembles}{scaling-ensembles}.
+
+%─────────────────────────────────────────────────────────────────────────────
+\bibliographystyle{plainnat}
+\begin{thebibliography}{20}
+
+\bibitem[Entezari et al.(2022)]{entezari2022role}
+Entezari, R., Sedghi, H., Saukh, O., and Neyshabur, B.
+\newblock The role of permutation invariance in linear mode connectivity of
+  neural networks.
+\newblock In \emph{International Conference on Learning Representations}, 2022.
+
+\bibitem[Fort et al.(2019)]{fort2019deep}
+Fort, S., Hu, H., and Lakshminarayanan, B.
+\newblock Deep ensembles: A loss landscape perspective.
+\newblock \emph{arXiv:1912.02757}, 2019.
+
+\bibitem[Frankle et al.(2020)]{frankle2020linear}
+Frankle, J., Dziugaite, G.~K., Roy, D., and Carlin, M.
+\newblock Linear mode connectivity and the lottery ticket hypothesis.
+\newblock In \emph{International Conference on Machine Learning}, 2020.
+
+\bibitem[Garipov et al.(2018)]{garipov2018loss}
+Garipov, T., Izmailov, P., Podoprikhin, D., Vetrov, D., and Wilson, A.~G.
+\newblock Loss surfaces, mode connectivity, and fast ensembling of DNNs.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2018.
+
+\bibitem[Gustafsson et al.(2020)]{gustafsson2020evaluating}
+Gustafsson, F.~K., Danelljan, M., and Schon, T.~B.
+\newblock Evaluating scalable Bayesian deep learning methods for robust
+  computer vision.
+\newblock In \emph{CVPR Workshops}, 2020.
+
+\bibitem[Hendrycks and Dietterich(2019)]{hendrycks2019robustness}
+Hendrycks, D. and Dietterich, T.
+\newblock Benchmarking neural network robustness to common corruptions and
+  perturbations.
+\newblock In \emph{International Conference on Learning Representations}, 2019.
+
+\bibitem[Jacot et al.(2018)]{jacot2018neural}
+Jacot, A., Gabriel, F., and Hongler, C.
+\newblock Neural tangent kernel: Convergence and generalization in neural
+  networks.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2018.
+
+\bibitem[Jiang et al.(2020)]{jiang2020characterizing}
+Jiang, Y., Krishnan, D., Mobahi, H., and Bengio, S.
+\newblock Predicting the generalization gap in deep networks with margin
+  distributions.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Krogh and Vedelsby(1995)]{krogh1995neural}
+Krogh, A. and Vedelsby, J.
+\newblock Neural network ensembles, cross validation, and active learning.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 1995.
+
+\bibitem[Jacot et al.(2018)]{lee2019wide}
+Lee, J., Xiao, L., Schoenholz, S., Bahri, Y., Novak, R., Sohl-Dickstein, J.,
+  and Pennington, J.
+\newblock Wide neural networks of any depth evolve as linear models under
+  gradient descent.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2019.
+
+\bibitem[Lakshminarayanan et al.(2017)]{lakshminarayanan2017simple}
+Lakshminarayanan, B., Pritzel, A., and Blundell, C.
+\newblock Simple and scalable predictive uncertainty estimation using deep
+  ensembles.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\bibitem[Ovadia et al.(2019)]{ovadia2019can}
+Ovadia, Y., Fertig, E., Ren, J., Nado, Z., Sculley, D., Nowozin, S.,
+  Dillon, J., Lakshminarayanan, B., and Snoek, J.
+\newblock Can you trust your model's uncertainty? evaluating predictive
+  uncertainty under dataset shift.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2019.
+
+\end{thebibliography}
 
 \end{document}

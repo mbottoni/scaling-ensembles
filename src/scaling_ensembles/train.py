@@ -181,6 +181,7 @@ def train_epoch(
         logits = model(inputs)
         loss = criterion(logits, targets)
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
         optimizer.step()
         progress.set_postfix(loss=f"{loss.item():.4f}")
 
