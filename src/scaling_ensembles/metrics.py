@@ -76,9 +76,13 @@ def compare_predictions(
     both_wrong = model_a_wrong & model_b_wrong
     either_wrong = model_a_wrong | model_b_wrong
     midpoint = ensemble_probs
+    # Clamp to avoid log(0) which causes NaN in KL divergence
+    probs_a_clamped = probs_a.clamp(min=1e-7)
+    probs_b_clamped = probs_b.clamp(min=1e-7)
+    midpoint_clamped = midpoint.clamp(min=1e-7)
     js = 0.5 * (
-        F.kl_div(midpoint.log(), probs_a, reduction="batchmean")
-        + F.kl_div(midpoint.log(), probs_b, reduction="batchmean")
+        F.kl_div(midpoint_clamped.log(), probs_a_clamped, reduction="batchmean")
+        + F.kl_div(midpoint_clamped.log(), probs_b_clamped, reduction="batchmean")
     )
     agreement = (preds_a == preds_b).float().mean().item()
 
@@ -113,6 +117,28 @@ def negative_log_likelihood(probs: torch.Tensor, targets: torch.Tensor) -> float
 def brier_score(probs: torch.Tensor, targets: torch.Tensor) -> float:
     one_hot = F.one_hot(targets, num_classes=probs.shape[1]).to(probs.dtype)
     return ((probs - one_hot) ** 2).sum(dim=1).mean().item()
+
+
+def expected_calibration_error(
+    probs: torch.Tensor,
+    targets: torch.Tensor,
+    n_bins: int = 15,
+) -> float:
+    """Expected Calibration Error (ECE) with equal-width bins."""
+    confidences = probs.max(dim=1).values
+    predictions = probs.argmax(dim=1)
+    accuracies = (predictions == targets).float()
+    bin_boundaries = torch.linspace(0.0, 1.0, n_bins + 1)
+    ece = 0.0
+    n = float(targets.numel())
+    for lo, hi in zip(bin_boundaries[:-1], bin_boundaries[1:]):
+        mask = (confidences > lo) & (confidences <= hi)
+        if mask.sum() == 0:
+            continue
+        bin_accuracy = accuracies[mask].mean().item()
+        bin_confidence = confidences[mask].mean().item()
+        ece += mask.sum().item() * abs(bin_accuracy - bin_confidence) / n
+    return ece
 
 
 def safe_divide(numerator: float, denominator: float) -> float:
