@@ -131,7 +131,12 @@ OOD detection~\citep{ovadia2019can,gustafsson2020evaluating}.
 compelling alternative to single-model Bayesian inference.
 \citet{ashukha2020pitfalls} study evaluation protocols for ensemble
 methods and show that careful comparison requires accounting for total
-compute, not just number of parameters.
+compute, not just number of parameters.  Efficient ensemble alternatives
+include \emph{BatchEnsemble}~\citep{wen2020batchensemble}, which trains
+multiple ``rank-1'' perturbations of shared weights.  Our work is
+complementary: we study whether diversity exists for standard deep
+ensembles as a function of task difficulty, not whether it can be
+more cheaply approximated.
 
 \paragraph{Loss landscape and mode structure.}
 \citet{fort2019deep} argued that deep ensembles work well because
@@ -142,7 +147,11 @@ minima can be connected by low-loss curves or, for overparameterized
 networks, even by straight lines, motivating the study of linear mode
 connectivity.  \citet{entezari2022role} conjectured that SGD solutions
 become linearly mode-connected after permutation alignment as width
-increases.
+increases.  Model merging methods~\citep{wortsman2022model} leverage
+this connectivity to combine models without ensembling.  Our
+diversity--barrier dissociation shows that low barriers (connectivity)
+do not imply functional similarity, explaining why merging does not
+always match ensemble performance on hard tasks.
 
 \paragraph{Overparameterization and NTK theory.}
 \citet{jacot2018neural} showed that infinitely-wide networks converge to
@@ -150,7 +159,10 @@ kernel machines with a fixed NTK, suggesting eventual functional
 convergence.  \citet{lee2019wide} extended this to finite-width networks
 with appropriate learning-rate scaling.  In practice, however,
 neural networks are used in the \emph{feature-learning} regime far from
-the NTK limit, where they can find diverse solutions.
+the NTK limit, where they can find diverse solutions.  Our empirical
+results show that even at 9.6M parameters---where barriers have collapsed
+to near zero---functional diversity on CIFAR-10 remains intact, consistent
+with operating in the feature-learning regime.
 
 \paragraph{Error decomposition and diversity.}
 The classical bias-variance-covariance decomposition for
@@ -167,8 +179,8 @@ under increasing width.
 The Bayes error of a task sets an upper bound on functional agreement
 among near-optimal classifiers.  Hard tasks with high Bayes error leave
 room for many diverse near-optimal solutions; easy tasks force
-convergence~\citep{jiang2020characterizing}.  Our Proposition~\ref{prop:multiplicity}
-formalizes this for uniformly distributed near-optimal classifiers.
+convergence.  Our Proposition~\ref{prop:multiplicity}
+formalizes this for near-optimal classifiers with independent errors.
 
 \paragraph{Uncertainty quantification.}
 Beyond accuracy, ensembles are known to improve uncertainty estimates.
@@ -599,22 +611,34 @@ uncertainty means that many labeling rules are equally consistent with
 the data, creating substantial room for epistemic uncertainty—and hence
 for models trained from different initializations to disagree.
 
-\begin{proposition}[Functional multiplicity under Bayes error]
+\begin{proposition}[Disagreement under error independence]
 \label{prop:multiplicity}
-Let $\mathcal{F}^*_\delta = \{f : \mathrm{err}(f) \leq \varepsilon^* + \delta\}$
-be the set of classifiers within $\delta$ of the Bayes error.  For two
-models $f_a, f_b$ drawn uniformly from $\mathcal{F}^*_\delta$, their
-expected disagreement satisfies
+Let $\varepsilon = \varepsilon^* + \delta$ be the per-model error rate of
+two classifiers $f_a, f_b \in \mathcal{F}^*_\delta$ where
+$\mathcal{F}^*_\delta = \{f : \mathrm{err}(f) \leq \varepsilon^* + \delta\}$.
+If the two classifiers err independently on each input (conditional on
+the input), then:
 \[
   \mathbb{E}[\mathrm{disagree}(f_a, f_b)]
-  \;\geq\; \frac{2(\varepsilon^* + \delta)(1 - 2\delta)}{1 + (1 - 2\delta)^2}
+  \;=\; 2\varepsilon(1 - \varepsilon)
   \;\xrightarrow{\delta\to 0}\; 2\varepsilon^*(1 - \varepsilon^*).
 \]
 \end{proposition}
-\noindent This lower bound grows with $\varepsilon^*$: harder tasks
-guarantee more disagreement among near-optimal models.  Conversely, when
-$\varepsilon^* \approx 0$, the bound collapses to zero and agreement is
-forced.
+
+\begin{proof}[Proof sketch]
+$\mathrm{disagree}(f_a, f_b) = P(f_a \mathrm{\ correct},\, f_b \mathrm{\ wrong}) + P(f_a \mathrm{\ wrong},\, f_b \mathrm{\ correct})$.
+Under independence of errors conditional on $x$, $P(f_a \mathrm{\ correct},\, f_b \mathrm{\ wrong}) = (1-\varepsilon)\varepsilon$ and similarly for the other term, giving $2\varepsilon(1-\varepsilon)$, which is maximized at $\varepsilon = 1/2$.
+\end{proof}
+
+\noindent The key question is when error independence holds.  On an easy
+task ($\varepsilon^* \approx 0$), almost all good classifiers agree, so errors
+are maximally correlated and disagreement is near zero.  On a hard task with
+large $\varepsilon^*$, many distinct near-optimal solutions exist (one for
+each pattern of choices on confusable inputs), so different random
+initializations find different solutions---errors become approximately
+independent and disagreement approaches $2\varepsilon^*(1-\varepsilon^*)$.
+This quantity is increasing in $\varepsilon^*$ for $\varepsilon^* < 1/2$,
+formalizing why harder tasks yield higher ensemble diversity.
 
 \paragraph{Width and the loss landscape.}
 In the NTK regime, infinitely-wide networks converge to the same kernel
@@ -630,6 +654,17 @@ This explains the diversity--barrier dissociation: as width grows, the
 loss landscape becomes flatter and minima become linearly connected (low
 barriers), but because many functionally distinct near-optimal solutions
 exist, independent training still lands in different ones.
+
+\begin{remark}[Overconfidence scaling with capacity]
+When a wider model finds a specific near-optimal solution via gradient
+descent, it does so with sharper loss landscape geometry (flatter minima,
+lower barriers), which correlates with sharper (higher-confidence)
+predictive distributions.  This explains the observed ECE growth with
+width on CIFAR-10: wider models commit more strongly to their particular
+error pattern.  Ensemble averaging over independently chosen patterns
+cancels overconfidence: the averaged distribution is more spread across
+competing decisions.
+\end{remark}
 
 \begin{remark}[Calibration and complementary errors]
 Individual models are overconfident on hard tasks because they commit to
@@ -787,6 +822,19 @@ Ashukha, A., Lyzhov, A., Molchanov, D., and Vetrov, D.
 Guo, C., Pleiss, G., Sun, Y., and Weinberger, K.~Q.
 \newblock On calibration of modern neural networks.
 \newblock In \emph{International Conference on Machine Learning}, 2017.
+
+\bibitem[Wen et al.(2020)]{wen2020batchensemble}
+Wen, Y., Tran, D., and Ba, J.
+\newblock BatchEnsemble: an alternative approach to efficient ensemble and
+  lifelong learning.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Wortsman et al.(2022)]{wortsman2022model}
+Wortsman, M., Ilharco, G., Gadre, S.~Y., Rosenfeld, R., Morcos, A., Namkoong,
+  H., Farhadi, A., Choi, Y., and Schmidt, L.
+\newblock Model soups: averaging weights of multiple fine-tuned models improves
+  accuracy without increasing inference time.
+\newblock In \emph{International Conference on Machine Learning}, 2022.
 
 \end{thebibliography}
 
