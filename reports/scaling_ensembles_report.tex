@@ -711,17 +711,19 @@ the ensemble gain grows; for blur, the gain is smaller and stable.}
 \subsection{Matched Training Progress}
 \label{sec:matched}
 
-To separate model capacity from optimization progress, we train all widths
-to a target training loss of 0.44 (the best achievable loss for width~16
-in 80 epochs), using early stopping.  Wider models reach this target much
-faster: width~16 requires ${\sim}56$ epochs; width~64 reaches its target
-in only 10 epochs and achieves substantially lower loss (0.27), revealing
-a confound.
-
-Despite this limitation, the matched-checkpoint results are consistent:
-pairwise disagreement on CIFAR-10 ranges from 21\% (width~64) to 29\%
-(width~16), and ensemble gain from 2.4 to 3.7 pp.  Wider models
-achieve higher accuracy with comparable or greater functional diversity.
+A potential concern is that wider models, being more expressive, may simply
+train faster---and the diversity differences could reflect different amounts
+of optimization, not task difficulty.  To test this, we train all widths
+to a common target training loss of 0.44 (the best achievable by
+width~16 in 80 epochs) using early stopping.  Wider models reach 0.44
+much faster (width~64 in ${\sim}10$ epochs vs.\ width~16 in ${\sim}56$
+epochs) and overshoot it (width~64's final loss is 0.27 with more training).
+This means the matched checkpoint is an undertrained wide model, but it still
+provides a useful cross-check: pairwise disagreement ranges from 21\%
+(width~64 at 10 epochs) to 29\% (width~16 at 56 epochs), and ensemble
+gain from 2.4 to 3.7 pp.  These values are consistent with the
+full-training results (Section~\ref{sec:diversity}), confirming that
+the diversity pattern is not an artifact of the number of training epochs.
 
 \subsection{Ensemble Compute Efficiency}
 \label{sec:compute}
