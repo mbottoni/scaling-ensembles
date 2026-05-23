@@ -55,6 +55,7 @@ SUMMARY_CONFIGS = {
     "FashionMNIST": (OUTPUT_ROOT / "analysis/fashionmnist_summary.csv", "#1f77b4", "D"),
     "SVHN": (OUTPUT_ROOT / "analysis/svhn_summary.csv", "#9467bd", "P"),
     "STL-10": (OUTPUT_ROOT / "analysis/stl10_summary.csv", "#8c564b", "X"),
+    "CIFAR-100": (OUTPUT_ROOT / "analysis/cifar100_summary.csv", "#e377c2", "h"),
 }
 
 

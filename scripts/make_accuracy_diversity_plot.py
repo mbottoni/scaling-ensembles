@@ -60,6 +60,7 @@ SUMMARY_FILES = {
     "FashionMNIST": (OUTPUT_ROOT / "analysis/fashionmnist_summary.csv", "#1f77b4", "D", 60),
     "SVHN": (OUTPUT_ROOT / "analysis/svhn_summary.csv", "#9467bd", "P", 60),
     "STL-10": (OUTPUT_ROOT / "analysis/stl10_summary.csv", "#8c564b", "X", 60),
+    "CIFAR-100": (OUTPUT_ROOT / "analysis/cifar100_summary.csv", "#e377c2", "h", 60),
 }
 
 
