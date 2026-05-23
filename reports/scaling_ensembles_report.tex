@@ -35,25 +35,29 @@ independently trained neural networks.  A common concern is that
 overparameterized networks converge to functionally similar solutions,
 undermining ensemble diversity as capacity grows.  We investigate this
 systematically across six benchmarks (MNIST to CIFAR-10) spanning a full
-difficulty range, using CNN and MLP models at widths covering 27K to
-9.6M parameters.  Our main finding is that \emph{pairwise disagreement,
-ensemble accuracy gain, and calibration benefit are governed by task
-difficulty, not parameter count}:  MNIST shows only 2.3--3.3\% disagreement
-and $<0.6$\,pp gain at all widths; CIFAR-10 sustains $25$--$31\%$
-disagreement and $3$--$4$\,pp gain across a $250\times$ parameter range.
-Per-class error rate predicts per-class disagreement within CIFAR-10 with
-Pearson $r=0.982$ ($p<10^{-30}$), ruling out dataset-size or resolution
-confounds.  Bootstrap tests confirm all between-dataset differences at
-$p<0.001$; pairwise error covariance on CIFAR-10 is flat at
-$\approx9\,\mathrm{pp}^2$ across widths, showing correlated failures do
-not grow with capacity.  A second finding is an overconfidence scaling
-law: single-model ECE on CIFAR-10 grows from 7\% to 22\% as width
-increases, while ensemble ECE stays at 2--8\%.  We also show that two
-narrow models outperform one wide model at the same parameter budget
-(+1.4--3.3\,pp), and identify a diversity--barrier dissociation:
-loss-landscape barriers collapse with width, yet functional diversity
-is preserved.  These results imply that deep ensembles remain practically
-valuable for large overparameterized models on genuinely hard tasks.
+difficulty range, using SmallCNN, MLP, and ResNetCIFAR models at widths
+covering 27K to 9.6M parameters.  Our main finding is that \emph{pairwise
+disagreement, ensemble accuracy gain, and calibration benefit are governed
+by task difficulty, not parameter count}:  MNIST shows only 2.3--3.3\%
+disagreement and $<0.6$\,pp gain at all widths; CIFAR-10 sustains
+$25$--$31\%$ disagreement and $3$--$4$\,pp gain across a $250\times$
+parameter range.  Per-class error rate predicts per-class disagreement
+within CIFAR-10 with Pearson $r=0.982$ ($p<10^{-30}$), ruling out
+dataset-size or resolution confounds.  An architecture comparison confirms
+generality: ResNet diversity tracks the SmallCNN pattern when controlling
+for accuracy---30.3\% vs.\ 27.7\% disagreement at ${\approx}74\%$
+accuracy, with ensemble gain ${\geq}2.5$ pp at all widths.  A second
+finding is an overconfidence scaling law: single-model ECE grows from 7\%
+to 22\% as width increases, while 10-member ensemble NLL remains flat at
+${\approx}0.64$ across all widths.  This overconfidence causes OOD
+detection failure: at width 256, a single model's AUROC for detecting
+Gaussian-corrupted inputs collapses to 0.531 (near chance), while a
+5-member ensemble achieves 0.729.  We further show that two narrow models
+outperform one wide model at the same parameter budget (+1.4--3.3\,pp),
+and identify a diversity--barrier dissociation: loss-landscape barriers
+collapse with width, yet functional diversity is preserved.  These results
+imply that deep ensembles remain practically valuable for large
+overparameterized models on genuinely hard tasks.
 \end{abstract}
 
 %─────────────────────────────────────────────────────────────────────────────
