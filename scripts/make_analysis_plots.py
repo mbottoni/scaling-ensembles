@@ -150,6 +150,7 @@ def plot_calibration_comparison() -> None:
 # ── Summary: diversity vs. task difficulty with CI ───────────────────────────
 def plot_diversity_with_ci() -> None:
     summaries = {
+        "MNIST (MLP)": ANALYSIS_DIR / "mnist_summary.csv",
         "FashionMNIST": ANALYSIS_DIR / "fashionmnist_summary.csv",
         "CIFAR-10": ANALYSIS_DIR / "cifar10_extended_summary.csv",
     }
@@ -214,6 +215,7 @@ def plot_barrier_vs_diversity() -> None:
     """Key finding: low barriers ≠ low diversity (STL-10 example)."""
     summaries = {}
     for fname, label in [
+        ("mnist_summary.csv", "MNIST (MLP)"),
         ("fashionmnist_summary.csv", "FashionMNIST"),
         ("cifar10_extended_summary.csv", "CIFAR-10"),
         ("stl10_summary.csv", "STL-10"),
@@ -245,9 +247,67 @@ def plot_barrier_vs_diversity() -> None:
     LOGGER.info("Wrote %s", path)
 
 
+def plot_overconfidence_vs_width() -> None:
+    """Show that single-model overconfidence (ECE) grows with width on hard tasks."""
+    datasets = {
+        "CIFAR-10 (hard)": ("cifar10_calibration_ts.csv", "#d62728"),
+        "FashionMNIST (easy)": ("fashionmnist_calibration_ts.csv", "#1f77b4"),
+    }
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+
+    for dataset_name, (fname, color) in datasets.items():
+        path = ANALYSIS_DIR / fname
+        if not path.exists():
+            continue
+        rows = read_csv(path)
+        # Get parameter count via width lookup
+        params_for_width = {16: 38600, 32: 151900, 64: 602800, 128: 2402000, 256: 9587000}
+        widths = [int(r["width"]) for r in rows]
+        params = [params_for_width.get(w, w) for w in widths]
+        single_ece = [float(r["single_ece_mean"]) * 100 for r in rows]
+        single_std = [float(r["single_ece_std"]) * 100 for r in rows]
+        ens_ece = [float(r["ensemble_ece_mean"]) * 100 for r in rows]
+        ts_ece = [float(r["temp_scaled_ece_mean"]) * 100 for r in rows]
+
+        ax = axes[0]
+        ax.semilogx(params, single_ece, "o-", color=color, label=dataset_name, markersize=5)
+        ax.fill_between(params,
+                        [m - s for m, s in zip(single_ece, single_std)],
+                        [m + s for m, s in zip(single_ece, single_std)],
+                        alpha=0.15, color=color)
+
+        ax2 = axes[1]
+        ax2.semilogx(params, single_ece, "o-", color=color, label=f"{dataset_name} (uncalib.)",
+                     markersize=5, linestyle="-")
+        ax2.semilogx(params, ts_ece, "s--", color=color, label=f"{dataset_name} (temp. scaled)",
+                     markersize=4, alpha=0.7)
+        ax2.semilogx(params, ens_ece, "^:", color=color, label=f"{dataset_name} (ensemble)",
+                     markersize=4, alpha=0.7)
+
+    axes[0].set_xlabel("# parameters")
+    axes[0].set_ylabel("Single-model ECE (%)")
+    axes[0].set_title("Overconfidence grows with capacity\n(CIFAR-10 only)")
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+
+    axes[1].set_xlabel("# parameters")
+    axes[1].set_ylabel("ECE (%)")
+    axes[1].set_title("ECE: uncalibrated vs. post-hoc fixes")
+    axes[1].legend(fontsize=7)
+    axes[1].grid(True, alpha=0.3)
+
+    fig.tight_layout()
+    path = PLOT_DIR / "overconfidence_vs_width.png"
+    fig.savefig(path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+    LOGGER.info("Wrote %s", path)
+
+
 if __name__ == "__main__":
     plot_ensemble_size_scaling()
     plot_calibration_comparison()
     plot_diversity_with_ci()
     plot_barrier_vs_diversity()
+    plot_overconfidence_vs_width()
     LOGGER.info("All plots written to %s", PLOT_DIR)
