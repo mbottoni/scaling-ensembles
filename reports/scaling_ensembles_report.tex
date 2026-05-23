@@ -865,6 +865,41 @@ independent and disagreement approaches $2\varepsilon^*(1-\varepsilon^*)$.
 This quantity is increasing in $\varepsilon^*$ for $\varepsilon^* < 1/2$,
 formalizing why harder tasks yield higher ensemble diversity.
 
+\textbf{Empirical test of the independence assumption.}
+We directly measure how well the independence assumption holds.  For each
+pair of CIFAR-10 models, we compute: (i) the Pearson correlation between
+the binary error indicators $\mathbf{1}_{f_a \text{ wrong}}$ and
+$\mathbf{1}_{f_b \text{ wrong}}$; (ii) the ratio of observed disagreement
+to the independence prediction $2\varepsilon(1-\varepsilon)$.  Across all
+widths, error correlations are $0.44$--$0.49$ (positive but not maximal),
+and observed disagreement is $68$--$76\%$ of the independence prediction
+(Table~\ref{tab:indep}).  Crucially, \emph{both quantities are flat across
+widths}, confirming that the departure from independence does not grow with
+capacity.  Overparameterization does not drive models to share the same
+error pattern.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Width & Error rate & Error corr.\ $\rho$ & Observed disagree & Indep.\ ratio\\
+\midrule
+16  & 28.2\% & 0.493 & 27.7\% & 0.684\\
+32  & 27.0\% & 0.448 & 29.1\% & 0.739\\
+64  & 24.5\% & 0.482 & 25.2\% & 0.682\\
+128 & 24.7\% & 0.486 & 25.5\% & 0.685\\
+256 & 27.9\% & 0.441 & 30.4\% & 0.756\\
+\bottomrule
+\end{tabular}
+\caption{Empirical test of the independence assumption (CIFAR-10 CNN, all pairs).
+Error correlation $\rho$ is the Pearson correlation between binary error indicators.
+Independence ratio is observed disagreement divided by $2\varepsilon(1-\varepsilon)$.
+Both metrics are flat across widths, confirming that overparameterization
+does not increase error coupling.}
+\label{tab:indep}
+\end{table}
+
 \paragraph{Width and the loss landscape.}
 In the NTK regime, infinitely-wide networks converge to the same kernel
 machine solution, which is unique for a given kernel.  Standard training,
