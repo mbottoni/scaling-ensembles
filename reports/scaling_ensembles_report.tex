@@ -1054,6 +1054,25 @@ overconfidence even without explicit calibration.  This explains why
 ECE reduction from ensembles grows with task difficulty.
 \end{remark}
 
+\begin{remark}[Theoretical basis for the gain-error coefficient]
+\label{rem:coefficient}
+For a 2-member ensemble, the accuracy gain relative to either member satisfies
+\begin{equation*}
+  \mathrm{gain}
+  = P(\text{ens right}) - P(\text{single right})
+  = P(\text{exactly one right}) \cdot \bigl(p_{\mathrm{corr}} - \tfrac{1}{2}\bigr),
+\end{equation*}
+where $p_{\mathrm{corr}} = P(\text{ens right} \mid \text{exactly one right}) > \tfrac{1}{2}$
+because a correct model is typically more confident than an incorrect one
+(even under overconfidence).  Under approximate error independence,
+$P(\text{exactly one right}) \approx 2\varepsilon(1-\varepsilon)$, giving
+$\mathrm{gain} \approx 2\varepsilon(1-\varepsilon)(p_{\mathrm{corr}} - \tfrac{1}{2})$.
+Empirically across our CIFAR-10 settings, $p_{\mathrm{corr}} \approx 0.59$
+(from back-computation of Table~\ref{tab:indep}), yielding a coefficient
+$2(1-\varepsilon)(p_{\mathrm{corr}} - \tfrac{1}{2}) \approx 0.14$ for $\varepsilon \in [0.15,0.35]$---consistent with the empirical slope of the gain-error law.
+This coefficient exceeds zero whenever models are better-calibrated than chance ($p_{\mathrm{corr}} > \tfrac{1}{2}$), which holds on all our benchmarks.  STL-10's low gain is explained by reduced $p_{\mathrm{corr}}$: correlated underfitting makes the ensemble no better than either model when they disagree.
+\end{remark}
+
 %─────────────────────────────────────────────────────────────────────────────
 \section{Discussion}
 \label{sec:discussion}
