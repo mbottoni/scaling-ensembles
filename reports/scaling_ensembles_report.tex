@@ -716,10 +716,24 @@ ECE reduction from ensembles grows with task difficulty.
 \paragraph{Practical implications.}
 Our results support ensemble deployment for large models on hard tasks.
 The claim that overparameterization makes ensembles redundant does not
-hold at the scale and task range we study.  The ensemble-size scaling
+hold at the scale and task range we study.  Based on our findings, we
+suggest the following heuristic: if a task's best single-model accuracy
+is below $\sim$85\%, ensembles provide substantial gains in both accuracy
+(3--4 pp) and calibration (5--14 pp ECE reduction); if accuracy exceeds
+$\sim$90\%, temperature scaling is comparably effective for calibration,
+and ensembles provide diminishing gains.  The ensemble-size scaling
 curves (Figure~\ref{fig:ensemble_scaling}) show that practitioners can
-expect ${\sim}5$--$8$ pp gain even from a 10-member ensemble of
-mid-capacity CNNs on CIFAR-10.
+expect $5$--$8$ pp NLL improvement from a 10-member ensemble on CIFAR-10,
+regardless of model capacity.
+
+\paragraph{Connection to model merging.}
+Our diversity--barrier dissociation is directly relevant to model merging
+methods~\citep{wortsman2022model}, which average model weights directly.
+On hard tasks (CIFAR-10, STL-10), low loss barriers mean that weight
+interpolation between two models encounters no loss spikes, yet the models
+make functionally different predictions.  This explains why model merging
+tends to underperform ensembles on hard tasks: merging collapses the
+functional diversity that ensembles preserve.
 
 \paragraph{Limitations.}
 Our primary CNN has at most $\sim$10M parameters on 32$\times$32 images;
@@ -730,17 +744,20 @@ optimization-limited and do not cleanly extend our conclusions to
 attention-based architectures.  The corrupted-CIFAR-10 evaluation uses a
 single severity level per corruption type; a full CIFAR-10-C evaluation
 (19 corruption types, 5 severities) would strengthen the OOD claim.
-Additionally, our three to ten seeds per width may produce variance in
-pairwise metrics for smaller datasets (SVHN, STL-10).
+Additionally, our three seeds per width may produce variance in
+pairwise metrics for smaller datasets (SVHN, STL-10).  Finally, STL-10's
+smaller training set (5k vs 50k for CIFAR-10) may confound capacity effects
+with data efficiency effects for that dataset.
 
 \paragraph{Ongoing and future work.}
 A residual network (ResNet) CIFAR-10 sweep across the same width range is
-currently running to test robustness of the diversity--difficulty finding
-across architectures.  Other key directions include: extending to
+running to test robustness of the diversity--difficulty finding across
+architectures.  Other key directions include: extending to
 larger-scale architectures (ViT, ResNet-50) and datasets (ImageNet,
-CIFAR-100); studying architecture diversity within an ensemble;
-theoretical characterization of the diversity--barrier dissociation; and
-connecting to ensemble distillation and Bayesian deep learning.
+CIFAR-100 with 100-class difficulty); studying mixed-architecture
+ensembles; theoretical characterization of the diversity--barrier
+dissociation; and connecting to ensemble distillation and Bayesian deep
+learning.
 
 %─────────────────────────────────────────────────────────────────────────────
 \section{Conclusion}
