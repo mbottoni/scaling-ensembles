@@ -2,7 +2,7 @@
 """Corruption detection AUROC analysis.
 
 Uses CIFAR-10 CNN models trained on clean data to distinguish clean
-CIFAR-10 test examples from corrupted ones (Gaussian noise and motion blur),
+CIFAR-10 test examples from corrupted ones (Gaussian noise and Gaussian blur),
 using predictive entropy as the uncertainty score.
 
 Reads:
@@ -160,7 +160,7 @@ def main() -> None:
     # Plot
     PARAM_COUNTS = {16: 38600, 32: 151900, 64: 602800, 128: 2402000, 256: 9587000}
     corruption_colors = {"gaussian": "#d62728", "blur": "#1f77b4"}
-    corruption_labels = {"gaussian": "Gaussian noise", "blur": "Motion blur"}
+    corruption_labels = {"gaussian": "Gaussian noise", "blur": "Gaussian blur"}
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
     for ax_idx, (corruption_name, width_data) in enumerate(plot_data.items()):
