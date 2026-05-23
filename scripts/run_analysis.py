@@ -96,6 +96,18 @@ if (SVHN / "cache/logits").exists():
     write_summary_csv(svhn_summary, ANALYSIS_DIR / "svhn_summary.csv")
     LOGGER.info("Wrote SVHN analysis")
 
+# ── CIFAR-100 CNN width sweep (5 seeds × 4 widths) ──────────────────────────
+CIFAR100 = OUTPUT_ROOT / "cifar100-cnn-width-sweep"
+if (CIFAR100 / "cache/logits").exists():
+    cifar100_widths = [16, 32, 64, 128]
+    cifar100_seeds = list(range(5))
+    LOGGER.info("Loading CIFAR-100 logit cache...")
+    cifar100_cache = load_logits_cache(CIFAR100, cifar100_widths, cifar100_seeds)
+    cifar100_valid_widths = sorted({w for (w, _) in cifar100_cache})
+    cifar100_summary = experiment_summary_with_ci(CIFAR100)
+    write_summary_csv(cifar100_summary, ANALYSIS_DIR / "cifar100_summary.csv")
+    LOGGER.info("Wrote CIFAR-100 analysis")
+
 # ── MNIST MLP extended sweep (10 seeds × 6 widths) ──────────────────────────
 MNIST = OUTPUT_ROOT / "mnist-mlp-extended-width-sweep"
 if (MNIST / "cache/logits").exists():
