@@ -1,0 +1,37 @@
+name: series-cifar10-resnet-width-sweep
+output_dir: outputs/series/cifar10-resnet-width-sweep
+
+data:
+  name: CIFAR10
+  root: data
+  batch_size: 128
+  eval_batch_size: 512
+  num_workers: 0
+
+model:
+  architecture: resnet
+  widths: [16, 32, 64, 128]
+  hidden_layers: 2
+  activation: relu
+
+training:
+  epochs: 50
+  seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+  device: mps
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.0001
+
+similarity:
+  max_pairs_per_width:
+  interpolation_steps: 11
+
+tracking:
+  mlflow_enabled: true
+  tracking_uri: outputs/mlruns
+  experiment_name: scaling-ensembles-series
+  log_artifacts: true
+  log_checkpoints: true
+  log_logits: true
+  log_environment: true
+  use_mlflow_cache: true

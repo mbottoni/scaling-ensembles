@@ -101,46 +101,43 @@ def plot_ensemble_size_scaling() -> None:
     LOGGER.info("Wrote %s", path)
 
 
-# ── Calibration ECE ──────────────────────────────────────────────────────────
+# ── Calibration ECE with temperature scaling baseline ────────────────────────
 def plot_calibration_comparison() -> None:
     datasets = {
-        "FashionMNIST\n(easy)": "fashionmnist_calibration.csv",
-        "CIFAR-10\n(hard)": "cifar10_calibration.csv",
+        "FashionMNIST (easy)": "fashionmnist_calibration_ts.csv",
+        "CIFAR-10 (hard)": "cifar10_calibration_ts.csv",
     }
-    secondary = {}
-    for name, fname in [("STL-10\n(harder)", "stl10_calibration.csv"), ("SVHN", "svhn_calibration.csv")]:
-        if (ANALYSIS_DIR / fname).exists():
-            secondary[name] = fname
 
-    all_datasets = {**datasets, **secondary}
-    fig, axes = plt.subplots(1, len(all_datasets), figsize=(4 * len(all_datasets), 4), sharey=False)
-    if len(all_datasets) == 1:
-        axes = [axes]
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4.5), sharey=False)
 
-    for ax, (dataset_name, fname) in zip(axes, all_datasets.items()):
+    for ax, (dataset_name, fname) in zip(axes, datasets.items()):
         path = ANALYSIS_DIR / fname
         if not path.exists():
             continue
         rows = read_csv(path)
         widths = [int(r["width"]) for r in rows]
-        params = [width * width for width in widths]  # rough proxy
+        width_labels = [f"w={w}\n{PARAM_LABELS.get(w, '?')}" for w in widths]
+        x = np.arange(len(widths))
+
         single_eces = [float(r["single_ece_mean"]) * 100 for r in rows]
         single_stds = [float(r["single_ece_std"]) * 100 for r in rows]
+        ts_eces = [float(r["temp_scaled_ece_mean"]) * 100 for r in rows]
+        ts_stds = [float(r["temp_scaled_ece_std"]) * 100 for r in rows]
         ens_eces = [float(r["ensemble_ece_mean"]) * 100 for r in rows]
         ens_stds = [float(r["ensemble_ece_std"]) * 100 for r in rows]
 
-        x = range(len(widths))
-        width_labels = [f"w={w}\n{PARAM_LABELS.get(w,'?')}" for w in widths]
-
-        ax.bar([xi - 0.2 for xi in x], single_eces, width=0.35, label="Single model", color="#1f77b4", alpha=0.8,
+        bar_w = 0.25
+        ax.bar(x - bar_w, single_eces, width=bar_w, label="Single model", color="#1f77b4", alpha=0.85,
                yerr=single_stds, capsize=3)
-        ax.bar([xi + 0.2 for xi in x], ens_eces, width=0.35, label="2-model ensemble", color="#ff7f0e", alpha=0.8,
+        ax.bar(x, ts_eces, width=bar_w, label="Temp. scaled (post-hoc)", color="#2ca02c", alpha=0.85,
+               yerr=ts_stds, capsize=3)
+        ax.bar(x + bar_w, ens_eces, width=bar_w, label="2-member ensemble", color="#ff7f0e", alpha=0.85,
                yerr=ens_stds, capsize=3)
-        ax.set_xticks(list(x))
+        ax.set_xticks(x)
         ax.set_xticklabels(width_labels, fontsize=8)
         ax.set_ylabel("ECE (%)")
-        ax.set_title(f"Expected Calibration Error\n{dataset_name}")
-        ax.legend()
+        ax.set_title(f"Calibration (ECE): {dataset_name}")
+        ax.legend(fontsize=8)
         ax.grid(True, alpha=0.3, axis="y")
 
     fig.tight_layout()
