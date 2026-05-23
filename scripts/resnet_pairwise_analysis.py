@@ -126,9 +126,13 @@ def main() -> None:
             preds_a = probs_a.argmax(dim=1)
             preds_b = probs_b.argmax(dim=1)
 
+            wrong_a = (preds_a != targets).float()
+            wrong_b = (preds_b != targets).float()
+
             agreement = (preds_a == preds_b).float().mean().item()
-            acc_a = (preds_a == targets).float().mean().item()
-            acc_b = (preds_b == targets).float().mean().item()
+            acc_a = 1.0 - wrong_a.mean().item()
+            acc_b = 1.0 - wrong_b.mean().item()
+            both_wrong = (wrong_a * wrong_b).mean().item()
 
             # Ensemble (average probs)
             ens_probs = 0.5 * (probs_a + probs_b)
@@ -148,6 +152,7 @@ def main() -> None:
                 "agreement": agreement,
                 "model_a_accuracy": acc_a,
                 "model_b_accuracy": acc_b,
+                "both_wrong": both_wrong,
                 "ensemble_accuracy": ens_acc,
                 "js_divergence": js,
             })

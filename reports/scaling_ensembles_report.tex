@@ -44,8 +44,8 @@ disagreement and $<0.6$\,pp gain at all widths; CIFAR-10 sustains
 $25$--$31\%$ disagreement and $3$--$4$\,pp gain across a $250\times$
 parameter range.  Per-class error rate predicts per-class disagreement
 within CIFAR-10 with Pearson $r=0.982$ ($p<10^{-30}$), ruling out
-dataset-size or resolution confounds.  Pooling all 384 data points (pairwise model comparisons and per-dataset aggregates) across 6 datasets, 2 architectures,
-and a 350$\times$ parameter range, Pearson $r = 0.923$ ($p < 10^{-160}$)
+dataset-size or resolution confounds.  Pooling all 414 data points (pairwise model comparisons and per-dataset aggregates) across 6 datasets, 2 architectures,
+and a 350$\times$ parameter range, Pearson $r = 0.935$ ($p < 10^{-186}$)
 between accuracy and disagreement confirms that accuracy is a universal
 predictor of ensemble diversity.  An architecture comparison further
 confirms generality: ResNet diversity tracks the SmallCNN pattern when
@@ -128,9 +128,9 @@ task difficulty?
   \item \textbf{(Sections~\ref{sec:diversity}, \ref{sec:architecture})}
         We provide multi-scale validation: (a)~per-class error rate
         predicts per-class disagreement within CIFAR-10 with $r = 0.982$
-        ($p < 10^{-30}$); (b)~pooling all 384 data points (pairwise comparisons and aggregates)
-        across 6 datasets and 2 architectures, Pearson $r = 0.923$ ($p < 10^{-160}$),
-        with partial $r = 0.920$ controlling for parameter count;
+        ($p < 10^{-30}$); (b)~pooling all 414 data points (pairwise comparisons and aggregates)
+        across 6 datasets and 2 architectures, Pearson $r = 0.935$ ($p < 10^{-186}$),
+        with partial $r = 0.928$ controlling for parameter count;
         (c)~cross-architecture (SmallCNN + ResNet) $r = 0.954$.
 
   \item \textbf{(Section~\ref{sec:compute})} We show a compute
@@ -434,16 +434,16 @@ diversity.
 
 \textbf{Comprehensive accuracy-diversity relationship.}
 Figure~\ref{fig:acc_disagree} pools all data across datasets,
-architectures, and widths ($n = 384$: 216 CNN pairs $+$ 150 ResNet pairs $+$ 18 dataset aggregates).  The Pearson correlation
-between individual model accuracy and disagreement is $r = 0.923$
-($p < 10^{-160}$); Spearman $\rho = 0.861$ ($p < 10^{-114}$) confirms
+architectures, and widths ($n = 414$: 216 CNN pairs $+$ 180 ResNet pairs $+$ 18 dataset aggregates).  The Pearson correlation
+between individual model accuracy and disagreement is $r = 0.935$
+($p < 10^{-186}$); Spearman $\rho = 0.889$ ($p < 10^{-140}$) confirms
 the relationship is not driven by distributional assumptions.  To
 directly test whether parameter count confounds the relationship, we
 compute the partial correlation between accuracy and disagreement
-\emph{controlling} for $\log(\text{params})$: the partial $r = 0.920$
-($p < 10^{-157}$), nearly identical to the marginal $r = 0.923$, while
+\emph{controlling} for $\log(\text{params})$: the partial $r = 0.928$
+($p < 10^{-177}$), nearly identical to the marginal $r = 0.935$, while
 the direct correlation between parameter count and disagreement is only
-$r = -0.190$.  Accuracy is a universal predictor of diversity;
+$r = -0.303$.  Accuracy is a universal predictor of diversity;
 parameter count is not.
 
 \begin{figure}[h]
@@ -451,9 +451,9 @@ parameter count is not.
 \includegraphics[width=0.75\linewidth]{../outputs/series/paper-plots/accuracy_vs_disagreement.png}
 \caption{Individual model accuracy vs.\ pairwise disagreement.  Visible
 markers show per-(dataset, architecture, width) means; OLS and Pearson
-statistics are computed from all $384$ individual pairwise model comparisons
-(216 CNN $+$ 150 ResNet $+$ 18 summary-dataset aggregates), giving
-$r = 0.923$ ($p < 10^{-160}$).  Marker size scales with
+statistics are computed from all $414$ individual pairwise model comparisons
+(216 CNN $+$ 180 ResNet $+$ 18 summary-dataset aggregates), giving
+$r = 0.935$ ($p < 10^{-186}$).  Marker size scales with
 $\log(\text{parameters})$.  Dotted curve: theoretical $2\varepsilon(1-\varepsilon)$
 under error independence.}
 \label{fig:acc_disagree}
@@ -808,11 +808,11 @@ SmallCNN & 128 & 2.4M  & $75.3\%$ & $25.5\%$ & $3.10$\,pp\\
 ResNet   & 16  & 78k   & $73.8\%_{(0.7)}$ & $30.3\%_{(0.9)}$ & $4.45$\,pp\\
 ResNet   & 32  & 309k  & $78.2\%_{(0.8)}$ & $24.8\%_{(1.0)}$ & $3.80$\,pp\\
 ResNet   & 64  & 1.2M  & $82.0\%_{(0.5)}$ & $19.4\%_{(1.0)}$ & $2.84$\,pp\\
-ResNet   & 128 & 4.9M  & $83.8\%_{(0.3)}$ & $17.2\%_{(0.9)}$ & $2.57$\,pp\\
+ResNet   & 128 & 4.9M  & $83.9\%_{(0.4)}$ & $16.8\%_{(0.9)}$ & $2.46$\,pp\\
 \bottomrule
 \end{tabular}
 \caption{Architecture comparison on CIFAR-10.  ResNet achieves substantially
-higher accuracy at each width than SmallCNN (10 seeds per width, 6 for ResNet w=128).
+higher accuracy at each width than SmallCNN (10 seeds per width, 45 pairs each).
 Disagreement and ensemble gain \emph{decrease} with width in ResNet, but this
 reflects the corresponding accuracy increase, not capacity per se: as the
 model approaches a better Bayes error estimate, less room remains for diverse
@@ -822,8 +822,8 @@ errors.  Both architectures show substantial ensemble gain at all widths.}
 
 Figure~\ref{fig:arch_comparison} shows disagreement and ensemble gain for
 both architectures as a function of parameter count.  Within ResNet,
-disagreement decreases from 30.3\% to 17.2\% as accuracy rises from
-73.8\% to 83.8\%.  At similar accuracy levels (${\approx}74\%$),
+disagreement decreases from 30.3\% to 16.8\% as accuracy rises from
+73.8\% to 83.9\%.  At similar accuracy levels (${\approx}74\%$),
 ResNet (30.3\%) and SmallCNN (27.7\%) show comparable disagreement,
 confirming that accuracy---not architecture---determines diversity.
 The governing quantity is the model's proximity to the task Bayes error:
@@ -835,12 +835,12 @@ all 9 data points (5 SmallCNN widths $+$ 4 ResNet widths on
 CIFAR-10), the Pearson correlation between per-width error rate and
 disagreement is $r = 0.954$ ($p < 10^{-4}$), confirming that the accuracy--diversity
 relationship holds across model families.  Ensemble gain remains
-positive and substantial (${\geq}2.5$ pp) even for the best-performing
-ResNet, confirming that the ensemble benefit does not vanish with
+positive and substantial (${\geq}2.4$ pp) even for the best-performing
+ResNet (w=128: $2.46$\,pp), confirming that the ensemble benefit does not vanish with
 improved architecture.
 
 \textbf{Error covariance.}  For ResNet, pairwise error covariance is
-$4.2$--$5.1$\,pp$^2$ and flat across widths (vs.\ $8.8$--$10.0$\,pp$^2$
+$6.8$--$7.7$\,pp$^2$ and flat across widths (vs.\ $8.8$--$10.0$\,pp$^2$
 for SmallCNN).  The lower absolute covariance reflects ResNet's higher
 accuracy (lower error rates reduce the scale of the covariance term), but
 the flatness across widths confirms---across both architectures---that
