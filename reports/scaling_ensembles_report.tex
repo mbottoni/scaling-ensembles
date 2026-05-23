@@ -827,8 +827,17 @@ disagreement decreases from 30.3\% to 16.8\% as accuracy rises from
 ResNet (30.3\%) and SmallCNN (27.7\%) show comparable disagreement,
 confirming that accuracy---not architecture---determines diversity.
 The governing quantity is the model's proximity to the task Bayes error:
-as ResNet achieves 83.8\% accuracy (closer to the task ceiling), fewer
+as ResNet achieves 83.9\% accuracy (closer to the task ceiling), fewer
 confusable examples remain for independent errors to occur.
+
+\textbf{Natural experiment.}  The two architectures act as a controlled
+test of the difficulty hypothesis.  SmallCNN plateaus near 75\% accuracy
+on CIFAR-10 regardless of width, so the effective task difficulty stays
+roughly constant---and disagreement is correspondingly flat (25--31\%
+across all widths).  ResNet's superior inductive bias lets it push past
+80\%, so its effective difficulty decreases---and disagreement falls with
+it.  Both behaviors are predicted by the difficulty hypothesis: diversity
+tracks the model's remaining error rate, not its parameter count.
 
 \textbf{Cross-architecture accuracy-diversity correlation.}  Pooling
 all 9 data points (5 SmallCNN widths $+$ 4 ResNet widths on
