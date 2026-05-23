@@ -709,9 +709,14 @@ total parameters} but achieves higher accuracy.}
 In every case, the two-member ensemble achieves higher accuracy than the
 single model with $2\times$ to $4\times$ more parameters.  The
 $2{\times}$w=64 ensemble (1.2M total) beats $1{\times}$w=128 (2.4M) by
-3.3\,pp while using half the parameters.  This confirms that functional
-diversity provides accuracy gains not achievable by simply scaling a single
-model—a practical argument for ensemble deployment on hard tasks.
+3.3\,pp while using half the parameters.  For ResNetCIFAR, the same
+comparison ($2{\times}$w=64, 2.45M total, vs.\ $1{\times}$w=128, 4.9M)
+shows a smaller but still meaningful $+1.0$\,pp gain---smaller because
+ResNet achieves higher accuracy (83.8\% vs.\ SmallCNN's 75.3\%), leaving
+less room for ensemble improvement.  This confirms that functional
+diversity provides accuracy gains not achievable by simply scaling a
+single model, with the benefit magnitude governed by the task's difficulty
+headroom.
 
 \subsection{Architecture Generalization: ResNet vs.\ SmallCNN}
 \label{sec:architecture}
