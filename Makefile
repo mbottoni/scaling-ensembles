@@ -21,13 +21,14 @@ SERIES_CONFIGS := \
 	experiments/series/cifar10_cnn_blur_eval.yaml \
 	experiments/series/cifar100_cnn_width_sweep.yaml \
 	experiments/series/svhn_cnn_width_sweep.yaml \
-	experiments/series/stl10_cnn_width_sweep.yaml
+	experiments/series/stl10_cnn_width_sweep.yaml \
+	experiments/series/cifar10_resnet_width_sweep.yaml
 
 .DEFAULT_GOAL := help
 
 .PHONY: help venv install install-tracking mlflow-ui mlflow-ui-public \
-	sweep sweep-mnist sweep-cifar-cnn sweep-cifar-transformer series \
-	plots plots-series marimo report compile clean-cache
+	sweep sweep-mnist sweep-cifar-cnn sweep-cifar-transformer sweep-resnet series \
+	analysis analysis-plots plots plots-series marimo report compile clean-cache
 
 help:
 	@echo "Useful commands:"
@@ -36,11 +37,10 @@ help:
 	@echo "  make install-tracking     Install package with MLflow support"
 	@echo "  make mlflow-ui            Start MLflow UI at http://$(HOST):$(PORT)"
 	@echo "  make sweep CONFIG=...     Run one experiment config"
-	@echo "  make sweep-mnist          Run pilot MNIST MLP sweep"
-	@echo "  make sweep-cifar-cnn      Run pilot CIFAR-10 CNN sweep"
-	@echo "  make sweep-cifar-transformer"
-	@echo "                            Run pilot CIFAR-10 patch-transformer sweep"
+	@echo "  make sweep-resnet         Run CIFAR-10 ResNet width sweep"
 	@echo "  make series               Run all series experiments with MPS fallback"
+	@echo "  make analysis             Run post-hoc analysis on series outputs"
+	@echo "  make analysis-plots       Generate analysis plots (ECE, scaling, barriers)"
 	@echo "  make plots                Generate paper-style plots from $(OUTPUT_ROOT)"
 	@echo "  make plots-series         Generate paper-style plots from outputs/series"
 	@echo "  make marimo               Open the Marimo visualization app"
@@ -76,6 +76,16 @@ sweep-cifar-cnn:
 
 sweep-cifar-transformer:
 	$(MAKE) sweep CONFIG=experiments/cifar10_patch_transformer_width_sweep.yaml
+
+sweep-resnet:
+	$(MAKE) sweep CONFIG=experiments/series/cifar10_resnet_width_sweep.yaml
+
+analysis:
+	$(BIN)/python scripts/run_analysis.py
+
+analysis-plots:
+	MPLCONFIGDIR=outputs/.matplotlib $(BIN)/python scripts/make_analysis_plots.py
+	MPLCONFIGDIR=outputs/.matplotlib $(BIN)/python scripts/make_reliability_diagrams.py
 
 series:
 	@set -euo pipefail; \
