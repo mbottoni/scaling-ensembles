@@ -11,6 +11,7 @@
 \usepackage{parskip}
 \usepackage{xcolor}
 \usepackage{subcaption}
+\usepackage{multirow}
 \usepackage{natbib}
 
 \hypersetup{colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue}
@@ -614,7 +615,8 @@ disagreement ($10$--$14\%$), consistent with the ``easy task'' regime.
 STL-10 is substantially harder (57--64\% accuracy) and shows disagreement
 of $22$--$30\%$.  Crucially, the STL-10 interpolation barrier collapses
 from 0.856 at width~16 to 0.056 at width~128—a 94\% reduction—yet
-disagreement \emph{increases} from 30.3\% to 22.1\% at the same widths.
+disagreement remains substantial at 22.1\% despite the barrier collapsing to near zero.
+The barrier shrank by 94\%; disagreement reduced by only 27\%---a clear dissociation.
 This is the diversity--barrier dissociation at its clearest.
 
 \subsection{Corrupted-Input Evaluation}
@@ -711,37 +713,47 @@ to single models of comparable parameter count.
 \centering
 \small
 \setlength{\tabcolsep}{5pt}
-\begin{tabular}{llrr}
+\begin{tabular}{lllrr}
 \toprule
-Configuration & Params (total) & CIFAR-10 Accuracy & Advantage\\
+Arch & Configuration & Params (total) & CIFAR-10 Accuracy & Advantage\\
 \midrule
-$2\times$ w=16 ensemble & $2\times 38$k = 76k & $75.4\%$ & \\
-$1\times$ w=32 single   & $152$k             & $73.0\%$ & $+2.4$\,pp\\
+\multirow{6}{*}{CNN}
+ & $2\times$ w=16 ens. & $2\times 38$k = 76k  & $75.4\%$ & \\
+ & $1\times$ w=32 single & $152$k              & $73.0\%$ & $+2.4$\,pp\\
+\cmidrule{2-5}
+ & $2\times$ w=32 ens. & $2\times152$k = 304k & $76.9\%$ & \\
+ & $1\times$ w=64 single & $603$k              & $75.5\%$ & $+1.4$\,pp\\
+\cmidrule{2-5}
+ & $2\times$ w=64 ens. & $2\times603$k = 1.2M & $78.6\%$ & \\
+ & $1\times$ w=128 single & $2.4$M             & $75.3\%$ & $+3.3$\,pp\\
 \midrule
-$2\times$ w=32 ensemble & $2\times152$k = 304k & $76.9\%$ & \\
-$1\times$ w=64 single   & $603$k              & $75.5\%$ & $+1.4$\,pp\\
-\midrule
-$2\times$ w=64 ensemble & $2\times603$k = 1.2M & $78.6\%$ & \\
-$1\times$ w=128 single  & $2.4$M               & $75.3\%$ & $+3.3$\,pp\\
+\multirow{4}{*}{ResNet}
+ & $2\times$ w=32 ens. & $2\times309$k = 618k & $82.0\%$ & \\
+ & $1\times$ w=64 single & $1.2$M              & $82.0\%$ & $+0.0$\,pp\\
+\cmidrule{2-5}
+ & $2\times$ w=64 ens. & $2\times1.2$M = 2.5M & $84.8\%$ & \\
+ & $1\times$ w=128 single & $4.9$M             & $83.8\%$ & $+1.0$\,pp\\
 \bottomrule
 \end{tabular}
 \caption{Ensemble compute efficiency: two narrow models vs.\ one wide model
-at matched total parameter count.  In each case, the ensemble uses \emph{fewer
-total parameters} but achieves higher accuracy.}
+at matched total parameter count.  CNN ensembles outperform single models
+by $+1.4$--$3.3$\,pp using fewer total parameters.  ResNet ensembles show
+smaller gains ($0$--$1.0$\,pp), consistent with the difficulty hypothesis:
+ResNet achieves higher accuracy, leaving less room for ensemble improvement.}
 \label{tab:compute}
 \end{table}
 
-In every case, the two-member ensemble achieves higher accuracy than the
-single model with $2\times$ to $4\times$ more parameters.  The
-$2{\times}$w=64 ensemble (1.2M total) beats $1{\times}$w=128 (2.4M) by
-3.3\,pp while using half the parameters.  For ResNetCIFAR, the same
-comparison ($2{\times}$w=64, 2.45M total, vs.\ $1{\times}$w=128, 4.9M)
-shows a smaller but still meaningful $+1.0$\,pp gain---smaller because
-ResNet achieves higher accuracy (83.8\% vs.\ SmallCNN's 75.3\%), leaving
-less room for ensemble improvement.  This confirms that functional
-diversity provides accuracy gains not achievable by simply scaling a
-single model, with the benefit magnitude governed by the task's difficulty
-headroom.
+In every CNN case, the two-member ensemble achieves higher accuracy than the
+single model with $2\times$ to $4\times$ more parameters, with the
+$2{\times}$w=64 ensemble (1.2M total) beating $1{\times}$w=128 (2.4M) by
+3.3\,pp while using half the parameters.  For ResNetCIFAR, the gains are
+smaller but the direction is consistent: $2{\times}$w=64 (2.5M total)
+beats $1{\times}$w=128 (4.9M) by $+1.0$\,pp.  The $2{\times}$w=32 vs.\
+$1{\times}$w=64 comparison is effectively tied (82.0\% each), reflecting
+that ResNet w=64 already achieves high accuracy (82.0\%), leaving little
+room for ensemble improvement.  This confirms that the magnitude of compute
+efficiency gains is governed by remaining accuracy headroom, itself a proxy
+for task difficulty relative to architecture capacity.
 
 \subsection{Architecture Generalization: ResNet vs.\ SmallCNN}
 \label{sec:architecture}
@@ -949,7 +961,7 @@ is below $\sim$85\%, ensembles provide substantial gains in both accuracy
 $\sim$90\%, temperature scaling is comparably effective for calibration,
 and ensembles provide diminishing gains.  The ensemble-size scaling
 curves (Figure~\ref{fig:ensemble_scaling}) show that practitioners can
-expect $5$--$8$ pp NLL improvement from a 10-member ensemble on CIFAR-10,
+expect $7$--$8$\,pp accuracy gain from a 10-member ensemble on CIFAR-10,
 regardless of model capacity.
 
 \paragraph{Connection to model merging.}
@@ -1022,8 +1034,8 @@ Per-class error rate predicts per-class disagreement with $r = 0.982$
 results collectively imply that deep ensembles remain practically
 valuable for large overparameterized models whenever the task is genuinely hard.
 
-Our code, experiment configurations, and analysis scripts are available at
-\href{https://github.com/scaling-ensembles}{scaling-ensembles}.
+Our code, experiment configurations, and analysis scripts will be released
+upon publication.
 
 %─────────────────────────────────────────────────────────────────────────────
 \bibliographystyle{plainnat}
@@ -1067,12 +1079,6 @@ Jacot, A., Gabriel, F., and Hongler, C.
 \newblock Neural tangent kernel: Convergence and generalization in neural
   networks.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2018.
-
-\bibitem[Jiang et al.(2020)]{jiang2020characterizing}
-Jiang, Y., Krishnan, D., Mobahi, H., and Bengio, S.
-\newblock Predicting the generalization gap in deep networks with margin
-  distributions.
-\newblock In \emph{International Conference on Learning Representations}, 2020.
 
 \bibitem[Krogh and Vedelsby(1995)]{krogh1995neural}
 Krogh, A. and Vedelsby, J.
