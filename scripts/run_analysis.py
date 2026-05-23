@@ -96,6 +96,20 @@ if (SVHN / "cache/logits").exists():
     write_summary_csv(svhn_summary, ANALYSIS_DIR / "svhn_summary.csv")
     LOGGER.info("Wrote SVHN analysis")
 
+# ── MNIST MLP extended sweep (10 seeds × 6 widths) ──────────────────────────
+MNIST = OUTPUT_ROOT / "mnist-mlp-extended-width-sweep"
+if (MNIST / "cache/logits").exists():
+    mnist_widths = [32, 64, 128, 256, 512, 1024]
+    mnist_seeds = list(range(10))
+    LOGGER.info("Loading MNIST MLP logit cache...")
+    mnist_cache = load_logits_cache(MNIST, mnist_widths, mnist_seeds)
+    mnist_valid_widths = sorted({w for (w, _) in mnist_cache})
+    mnist_calib = calibration_with_temperature_scaling(mnist_cache, mnist_valid_widths)
+    write_calibration_csv(mnist_calib, ANALYSIS_DIR / "mnist_calibration_ts.csv")
+    mnist_summary = experiment_summary_with_ci(MNIST)
+    write_summary_csv(mnist_summary, ANALYSIS_DIR / "mnist_summary.csv")
+    LOGGER.info("Wrote MNIST analysis")
+
 # ── Bootstrap significance tests ─────────────────────────────────────────────
 LOGGER.info("Running bootstrap significance tests...")
 

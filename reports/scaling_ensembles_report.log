@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.11.17)  1 MAY 2026 18:46
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.11.17)  22 MAY 2026 21:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**reports/scaling_ensembles_report.tex
-(./reports/scaling_ensembles_report.tex
+**scaling_ensembles_report.tex
+(./scaling_ensembles_report.tex
 LaTeX2e <2021-11-15> patch level 1
 L3 programming layer <2022-02-24>
 (/usr/local/texlive/2022/texmf-dist/tex/latex/base/article.cls
@@ -118,6 +118,18 @@ LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
 ))
+(/usr/local/texlive/2022/texmf-dist/tex/latex/amscls/amsthm.sty
+Package: amsthm 2020/05/29 v2.20.6
+\thm@style=\toks23
+\thm@bodyfont=\toks24
+\thm@headfont=\toks25
+\thm@notefont=\toks26
+\thm@headpunct=\toks27
+\thm@preskip=\skip52
+\thm@postskip=\skip53
+\thm@headsep=\skip54
+\dth@everypar=\toks28
+)
 (/usr/local/texlive/2022/texmf-dist/tex/latex/booktabs/booktabs.sty
 Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
 \heavyrulewidth=\dimen156
@@ -284,7 +296,7 @@ Package: uniquecounter 2019/12/15 v1.4 Provide unlimited unique counter (HO)
 Package uniquecounter Info: New unique counter `rerunfilecheck' on input line 2
 86.
 )
-\Hy@SectionHShift=\skip52
+\Hy@SectionHShift=\skip55
 ) (/usr/local/texlive/2022/texmf-dist/tex/latex/microtype/microtype.sty
 Package: microtype 2022/03/14 v3.0d Micro-typographical refinements (RS)
 
@@ -292,7 +304,7 @@ Package: microtype 2022/03/14 v3.0d Micro-typographical refinements (RS)
 Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
 \etb@tempcnta=\count288
 )
-\MT@toks=\toks23
+\MT@toks=\toks29
 \MT@tempbox=\box52
 \MT@count=\count289
 LaTeX Info: Redefining \noprotrusionifhmode on input line 1027.
@@ -308,7 +320,7 @@ File: microtype-pdftex.def 2022/03/14 v3.0d Definitions specific to pdftex (RS)
 
 LaTeX Info: Redefining \lsstyle on input line 900.
 LaTeX Info: Redefining \lslig on input line 900.
-\MT@outer@space=\skip53
+\MT@outer@space=\skip56
 )
 Package microtype Info: Loading configuration file microtype.cfg.
 
@@ -318,32 +330,85 @@ File: microtype.cfg 2022/03/14 v3.0d microtype main configuration file (RS)
 (/usr/local/texlive/2022/texmf-dist/tex/latex/parskip/parskip.sty
 Package: parskip 2021-03-14 v2.0h non-zero parskip adjustments
 )
+(/usr/local/texlive/2022/texmf-dist/tex/latex/xcolor/xcolor.sty
+Package: xcolor 2021/10/31 v2.13 LaTeX color extensions (UK)
+
+(/usr/local/texlive/2022/texmf-dist/tex/latex/graphics-cfg/color.cfg
+File: color.cfg 2016/01/02 v1.6 sample color configuration
+)
+Package xcolor Info: Driver file: pdftex.def on input line 227.
+Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1352.
+Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1356.
+Package xcolor Info: Model `RGB' extended on input line 1368.
+Package xcolor Info: Model `HTML' substituted by `rgb' on input line 1370.
+Package xcolor Info: Model `Hsb' substituted by `hsb' on input line 1371.
+Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1372.
+Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1373.
+Package xcolor Info: Model `Gray' substituted by `gray' on input line 1374.
+Package xcolor Info: Model `wave' substituted by `hsb' on input line 1375.
+)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2022/01/07 v1.5 Sub-captions (AR)
+
+(/usr/local/texlive/2022/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2022/03/01 v3.6b Customizing captions (AR)
+
+(/usr/local/texlive/2022/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2022/03/17 v2.3b caption3 kernel (AR)
+\caption@tempdima=\dimen176
+\captionmargin=\dimen177
+\caption@leftmargin=\dimen178
+\caption@rightmargin=\dimen179
+\caption@width=\dimen180
+\caption@indent=\dimen181
+\caption@parindent=\dimen182
+\caption@hangindent=\dimen183
+Package caption Info: Standard document class detected.
+)
+\c@caption@flags=\count291
+\c@continuedfloat=\count292
+Package caption Info: hyperref package is loaded.
+)
+\c@subfigure=\count293
+\c@subtable=\count294
+)
+(/usr/local/texlive/2022/texmf-dist/tex/latex/natbib/natbib.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip57
+\bibsep=\skip58
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count295
+)
+Package hyperref Info: Option `colorlinks' set `true' on input line 16.
+\c@proposition=\count296
+\c@remark=\count297
+
 (/usr/local/texlive/2022/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2022-02-07 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count291
+\l__color_backend_stack_int=\count298
 \l__pdf_internal_box=\box53
 )
-(reports/scaling_ensembles_report.aux)
+(./scaling_ensembles_report.aux)
 \openout1 = `scaling_ensembles_report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 16.
-LaTeX Font Info:    ... okay on input line 16.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 28.
+LaTeX Font Info:    ... okay on input line 28.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: pdftex
@@ -381,17 +446,17 @@ LaTeX Font Info:    ... okay on input line 16.
 
 (/usr/local/texlive/2022/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count292
-\scratchdimen=\dimen176
+\scratchcounter=\count299
+\scratchdimen=\dimen184
 \scratchbox=\box54
-\nofMPsegments=\count293
-\nofMParguments=\count294
-\everyMPshowfont=\toks24
-\MPscratchCnt=\count295
-\MPscratchDim=\dimen177
-\MPnumerator=\count296
-\makeMPintoPDFobject=\count297
-\everyMPtoPDFconversion=\toks25
+\nofMPsegments=\count300
+\nofMParguments=\count301
+\everyMPshowfont=\toks30
+\MPscratchCnt=\count302
+\MPscratchDim=\dimen185
+\MPnumerator=\count303
+\makeMPintoPDFobject=\count304
+\everyMPtoPDFconversion=\toks31
 ) (/usr/local/texlive/2022/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
@@ -401,7 +466,7 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-Package hyperref Info: Link coloring OFF on input line 16.
+Package hyperref Info: Link coloring ON on input line 28.
 
 (/usr/local/texlive/2022/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
@@ -413,28 +478,27 @@ Package: refcount 2019/12/15 v3.6 Data extraction from label references (HO)
 ty
 Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
-\c@section@level=\count298
+\c@section@level=\count305
 )
-LaTeX Info: Redefining \ref on input line 16.
-LaTeX Info: Redefining \pageref on input line 16.
-LaTeX Info: Redefining \nameref on input line 16.
- (reports/scaling_ensembles_report.out)
-(reports/scaling_ensembles_report.out)
+LaTeX Info: Redefining \ref on input line 28.
+LaTeX Info: Redefining \pageref on input line 28.
+LaTeX Info: Redefining \nameref on input line 28.
+ (./scaling_ensembles_report.out) (./scaling_ensembles_report.out)
 \@outlinefile=\write3
 \openout3 = `scaling_ensembles_report.out'.
 
-LaTeX Info: Redefining \microtypecontext on input line 16.
-Package microtype Info: Applying patch `item' on input line 16.
-Package microtype Info: Applying patch `toc' on input line 16.
-Package microtype Info: Applying patch `eqnum' on input line 16.
-Package microtype Info: Applying patch `footnote' on input line 16.
+LaTeX Info: Redefining \microtypecontext on input line 28.
+Package microtype Info: Applying patch `item' on input line 28.
+Package microtype Info: Applying patch `toc' on input line 28.
+Package microtype Info: Applying patch `eqnum' on input line 28.
+Package microtype Info: Applying patch `footnote' on input line 28.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
 Package microtype Info: Automatic font expansion enabled (level 2),
 (microtype)             stretch: 20, shrink: 20, step: 1, non-selected.
 Package microtype Info: Using default expansion set `alltext-nott'.
-LaTeX Info: Redefining \showhyphens on input line 16.
+LaTeX Info: Redefining \showhyphens on input line 28.
 Package microtype Info: No adjustment of tracking.
 Package microtype Info: No adjustment of interword spacing.
 Package microtype Info: No adjustment of character kerning.
@@ -443,7 +507,9 @@ Package microtype Info: No adjustment of character kerning.
 File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman 
 (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msa on input line 18.
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: End \AtBeginDocument code.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 30.
 
 
 (/usr/local/texlive/2022/texmf-dist/tex/latex/amsfonts/umsa.fd
@@ -452,7 +518,7 @@ File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 (/usr/local/texlive/2022/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 18.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 30.
 
 
 (/usr/local/texlive/2022/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -467,89 +533,148 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             See the microtype manual for details.
  [1
 
-{/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[2]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[3]
-<../outputs/series/paper-plots/diversity_accuracy_plane.png, id=85, 578.16pt x 
-433.62pt>
+{/usr/local/texlive/2022/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
+<../outputs/series/paper-plots/diversity_accuracy_plane.png, id=196, 578.16pt x
+ 433.62pt>
 File: ../outputs/series/paper-plots/diversity_accuracy_plane.png Graphic file (
 type png)
 <use ../outputs/series/paper-plots/diversity_accuracy_plane.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/diversity_accuracy_plane
-.png  used on input line 238.
-(pdftex.def)             Requested size: 432.17375pt x 324.12909pt.
+.png  used on input line 276.
+(pdftex.def)             Requested size: 413.3867pt x 310.03595pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../outputs/series/paper-plots/similarity_vs_parameter_count.png, id=87, 1011.7
-8pt x 289.08pt>
-File: ../outputs/series/paper-plots/similarity_vs_parameter_count.png Graphic f
-ile (type png)
-<use ../outputs/series/paper-plots/similarity_vs_parameter_count.png>
-Package pdftex.def Info: ../outputs/series/paper-plots/similarity_vs_parameter_
-count.png  used on input line 246.
-(pdftex.def)             Requested size: 446.26582pt x 127.50435pt.
+[4]
+<../outputs/series/paper-plots/diversity_with_ci.png, id=211, 929.874pt x 279.4
+44pt>
+File: ../outputs/series/paper-plots/diversity_with_ci.png Graphic file (type pn
+g)
+<use ../outputs/series/paper-plots/diversity_with_ci.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/diversity_with_ci.png  u
+sed on input line 355.
+(pdftex.def)             Requested size: 469.75502pt x 141.1714pt.
+
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../outputs/series/paper-plots/linear_interpolation_barriers.png, id=88, 578.16
-pt x 361.35pt>
-File: ../outputs/series/paper-plots/linear_interpolation_barriers.png Graphic f
-ile (type png)
-<use ../outputs/series/paper-plots/linear_interpolation_barriers.png>
-Package pdftex.def Info: ../outputs/series/paper-plots/linear_interpolation_bar
-riers.png  used on input line 255.
-(pdftex.def)             Requested size: 375.80544pt x 234.87471pt.
+[5 <../outputs/series/paper-plots/diversity_accuracy_plane.png>]
+<../outputs/series/paper-plots/overconfidence_vs_width.png, id=220, 713.064pt x
+ 279.444pt>
+File: ../outputs/series/paper-plots/overconfidence_vs_width.png Graphic file (t
+ype png)
+<use ../outputs/series/paper-plots/overconfidence_vs_width.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/overconfidence_vs_width.
+png  used on input line 389.
+(pdftex.def)             Requested size: 469.75502pt x 184.10101pt.
+
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[4] [5 <reports/../outputs/series/paper-plots/diversity_accuracy_plane.png>]
-[6 <reports/../outputs/series/paper-plots/similarity_vs_parameter_count.png>]
-[7 <reports/../outputs/series/paper-plots/linear_interpolation_barriers.png>]
-(reports/scaling_ensembles_report.aux)
+[6 <../outputs/series/paper-plots/diversity_with_ci.png>]
+<../outputs/series/paper-plots/ensemble_size_scaling.png, id=229, 713.064pt x 2
+79.444pt>
+File: ../outputs/series/paper-plots/ensemble_size_scaling.png Graphic file (typ
+e png)
+<use ../outputs/series/paper-plots/ensemble_size_scaling.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/ensemble_size_scaling.pn
+g  used on input line 416.
+(pdftex.def)             Requested size: 469.75502pt x 184.10101pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<../outputs/series/paper-plots/barrier_vs_diversity.png, id=231, 422.378pt x 35
+1.714pt>
+File: ../outputs/series/paper-plots/barrier_vs_diversity.png Graphic file (type
+ png)
+<use ../outputs/series/paper-plots/barrier_vs_diversity.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/barrier_vs_diversity.png
+  used on input line 443.
+(pdftex.def)             Requested size: 281.85587pt x 234.69725pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[7 <../outputs/series/paper-plots/overconfidence_vs_width.png>]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[8 <../outputs/series/paper-plots/ensemble_size_scaling.png>]
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[9 <../outputs/series/paper-plots/barrier_vs_diversity.png>] [10] [11]
+<../outputs/series/paper-plots/calibration_ece.png, id=273, 785.334pt x 315.579
+pt>
+File: ../outputs/series/paper-plots/calibration_ece.png Graphic file (type png)
+
+<use ../outputs/series/paper-plots/calibration_ece.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/calibration_ece.png  use
+d on input line 805.
+(pdftex.def)             Requested size: 469.75502pt x 188.77101pt.
+ [12]
+<../outputs/series/paper-plots/reliability_diagrams.png, id=281, 1002.947pt x 4
+27.5975pt>
+File: ../outputs/series/paper-plots/reliability_diagrams.png Graphic file (type
+ png)
+<use ../outputs/series/paper-plots/reliability_diagrams.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/reliability_diagrams.png
+  used on input line 825.
+(pdftex.def)             Requested size: 469.75502pt x 200.27272pt.
+<../outputs/series/paper-plots/error_decomposition.png, id=283, 641.597pt x 285
+.065pt>
+File: ../outputs/series/paper-plots/error_decomposition.png Graphic file (type 
+png)
+<use ../outputs/series/paper-plots/error_decomposition.png>
+Package pdftex.def Info: ../outputs/series/paper-plots/error_decomposition.png 
+ used on input line 845.
+(pdftex.def)             Requested size: 399.29463pt x 177.40833pt.
+
+[13 <../outputs/series/paper-plots/calibration_ece.png>] [14 <../outputs/series
+/paper-plots/reliability_diagrams.png> <../outputs/series/paper-plots/error_dec
+omposition.png>] (./scaling_ensembles_report.aux)
 Package rerunfilecheck Info: File `scaling_ensembles_report.out' has not change
 d.
-(rerunfilecheck)             Checksum: F7689CBD5BE9AA69E377D94F32D0058E;1764.
+(rerunfilecheck)             Checksum: 86FD430C0A099B83240DF7AC441D089D;3490.
  ) 
 Here is how much of TeX's memory you used:
- 12183 strings out of 478268
- 192604 string characters out of 5846346
- 534410 words of memory out of 5000000
- 30071 multiletter control sequences out of 15000+600000
- 484823 words of font info for 137 fonts, out of 8000000 for 9000
+ 14750 strings out of 478268
+ 236407 string characters out of 5846346
+ 578889 words of memory out of 5000000
+ 32449 multiletter control sequences out of 15000+600000
+ 491156 words of font info for 198 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 60i,9n,63p,1029b,395s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 67i,11n,77p,1021b,445s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 }</usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb>
 </usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
+/usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb><
 /usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></
 usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></u
 sr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr
-/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/l
-ocal/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/loc
-al/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local
-/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/t
-exlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texl
-ive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texli
-ve/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texliv
-e/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt10.pfb></usr/local/texlive
-/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt12.pfb></usr/local/texlive/
-2022/texmf-dist/fonts/type1/public/cm-super/sfrm1095.pfb>
-Output written on reports/scaling_ensembles_report.pdf (7 pages, 524583 bytes).
-
+/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/l
+ocal/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/loc
+al/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local
+/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/t
+exlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texl
+ive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive
+/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/20
+22/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2022/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2022/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2022/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb></usr/local/texlive/2022/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2022/texmf-
+dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2022/te
+xmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2022/texm
+f-dist/fonts/type1/public/cm-super/sfrm0800.pfb>
+Output written on scaling_ensembles_report.pdf (14 pages, 1376620 bytes).
 PDF statistics:
- 193 PDF objects out of 1000 (max. 8388607)
- 146 compressed objects within 2 object streams
- 34 named destinations out of 1000 (max. 500000)
- 40048 words of extra memory for PDF output out of 42996 (max. 10000000)
+ 410 PDF objects out of 1000 (max. 8388607)
+ 332 compressed objects within 4 object streams
+ 87 named destinations out of 1000 (max. 500000)
+ 49865 words of extra memory for PDF output out of 51595 (max. 10000000)
 
