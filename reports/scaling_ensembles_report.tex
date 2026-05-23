@@ -43,10 +43,13 @@ disagreement and $<0.6$\,pp gain at all widths; CIFAR-10 sustains
 $25$--$31\%$ disagreement and $3$--$4$\,pp gain across a $250\times$
 parameter range.  Per-class error rate predicts per-class disagreement
 within CIFAR-10 with Pearson $r=0.982$ ($p<10^{-30}$), ruling out
-dataset-size or resolution confounds.  An architecture comparison confirms
-generality: ResNet diversity tracks the SmallCNN pattern when controlling
-for accuracy---30.3\% vs.\ 27.7\% disagreement at ${\approx}74\%$
-accuracy, with ensemble gain ${\geq}2.5$ pp at all widths.  A second
+dataset-size or resolution confounds.  Pooling all 384 pairwise measurements across 6 datasets, 2 architectures,
+and a 350$\times$ parameter range, Pearson $r = 0.923$ ($p < 10^{-160}$)
+between accuracy and disagreement confirms that accuracy is a universal
+predictor of ensemble diversity.  An architecture comparison further
+confirms generality: ResNet diversity tracks the SmallCNN pattern when
+controlling for accuracy---30.3\% vs.\ 27.7\% disagreement at
+${\approx}74\%$ accuracy, with ensemble gain ${\geq}2.5$ pp at all widths.  A second
 finding is an overconfidence scaling law: single-model ECE grows from 7\%
 to 22\% as width increases, while 10-member ensemble NLL remains flat at
 ${\approx}0.64$ across all widths.  This overconfidence causes OOD
