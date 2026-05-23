@@ -33,29 +33,27 @@
 Deep ensembles improve accuracy and calibration by averaging predictions of
 independently trained neural networks.  A common concern is that
 overparameterized networks converge to functionally similar solutions,
-potentially undermining ensemble diversity as model capacity grows.  We
-investigate this concern systematically across five image-classification
-benchmarks spanning a wide difficulty range, using CNN models at widths
-covering 38\,K to 9.6\,M parameters.  Our main finding is that
-\emph{pairwise prediction disagreement, ensemble accuracy gain, and
-calibration benefit are governed by task difficulty, not parameter count}.
-On easy benchmarks (FashionMNIST, SVHN), wider models converge to
-near-identical predictors and ensembles provide marginal benefit ($<$1\,pp
-accuracy gain, ECE reduction $<$2\,pp).  On harder benchmarks (CIFAR-10,
-STL-10, corrupted inputs), ${\sim}25$--$30\%$ pairwise disagreement,
-JS~divergence~0.10--0.18, and 3--4\,pp ensemble accuracy gain persist
-across our full capacity range.  Bootstrap significance tests confirm these
-differences at $p<0.001$.  Pairwise error covariance is flat across widths
-on CIFAR-10 ($\approx 9\,\mathrm{pp}^2$), indicating that correlated
-failures do not grow with capacity.  A secondary finding is that
-single-model overconfidence grows with capacity on hard tasks (ECE 7\%
-at 38K to 22\% at 9.6M parameters), while ensemble calibration remains
-stable (2--8\% ECE across all widths).  We further show a dissociation
-between weight-space connectivity (interpolation barriers collapse with
-width) and function-space diversity (prediction disagreement is preserved):
-barrier metrics cannot proxy ensemble benefit.  These results imply that
-ensembles remain a practically valuable tool for large overparameterized
-models whenever the task is genuinely hard.
+undermining ensemble diversity as capacity grows.  We investigate this
+systematically across six benchmarks (MNIST to CIFAR-10) spanning a full
+difficulty range, using CNN and MLP models at widths covering 27K to
+9.6M parameters.  Our main finding is that \emph{pairwise disagreement,
+ensemble accuracy gain, and calibration benefit are governed by task
+difficulty, not parameter count}:  MNIST shows only 2.3--3.3\% disagreement
+and $<0.6$\,pp gain at all widths; CIFAR-10 sustains $25$--$31\%$
+disagreement and $3$--$4$\,pp gain across a $250\times$ parameter range.
+Per-class error rate predicts per-class disagreement within CIFAR-10 with
+Pearson $r=0.982$ ($p<10^{-30}$), ruling out dataset-size or resolution
+confounds.  Bootstrap tests confirm all between-dataset differences at
+$p<0.001$; pairwise error covariance on CIFAR-10 is flat at
+$\approx9\,\mathrm{pp}^2$ across widths, showing correlated failures do
+not grow with capacity.  A second finding is an overconfidence scaling
+law: single-model ECE on CIFAR-10 grows from 7\% to 22\% as width
+increases, while ensemble ECE stays at 2--8\%.  We also show that two
+narrow models outperform one wide model at the same parameter budget
+(+1.4--3.3\,pp), and identify a diversity--barrier dissociation:
+loss-landscape barriers collapse with width, yet functional diversity
+is preserved.  These results imply that deep ensembles remain practically
+valuable for large overparameterized models on genuinely hard tasks.
 \end{abstract}
 
 %─────────────────────────────────────────────────────────────────────────────
