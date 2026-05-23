@@ -97,50 +97,54 @@ task difficulty?
 
 \medskip\noindent\textbf{Main contributions.}
 \begin{enumerate}
-  \item We show that prediction disagreement and ensemble accuracy gain are
-        stable across a $250\times$ parameter-count range on CIFAR-10
-        (${\approx}27\%$ disagreement, $3$--$4$ pp gain at all widths),
-        but nearly absent on easy benchmarks: FashionMNIST shows
-        ${\approx}7\%$ disagreement and $<1$ pp gain; MNIST shows only
-        ${\approx}3\%$ disagreement and $<0.6$ pp gain despite spanning
-        27K to 1.9M parameters.  Image resolution and dataset size do not
-        explain the gap---MNIST and FashionMNIST share the same format.
+  \item \textbf{(Section~\ref{sec:diversity})} We show that prediction
+        disagreement and ensemble accuracy gain are stable across a
+        $250\times$ parameter-count range on CIFAR-10 (${\approx}27\%$
+        disagreement, $3$--$4$ pp gain at all widths), but nearly absent
+        on easy benchmarks: FashionMNIST shows ${\approx}7\%$ disagreement
+        and $<1$ pp gain; MNIST shows only ${\approx}3\%$ disagreement and
+        $<0.6$ pp gain despite spanning 27K to 1.9M parameters.  Image
+        resolution and dataset size do not explain the gap---MNIST and
+        FashionMNIST share the same format.
 
-  \item We quantify the calibration benefit of ensembles via ECE: on
-        hard tasks (CIFAR-10), single-model ECE \emph{grows} from 7\% to 22\%
-        as width increases (models become more overconfident), while two-member
-        ensembles stabilize ECE at 2--8\% across all widths---a reduction of
-        5--14\,pp.  On easy tasks the reduction is $<2$ pp.
+  \item \textbf{(Section~\ref{sec:calibration})} We quantify the
+        calibration benefit: on hard tasks (CIFAR-10), single-model ECE
+        \emph{grows} from 7\% to 22\% as width increases (an
+        overconfidence scaling law), while 10-member ensemble NLL stays
+        flat at ${\approx}0.64$ across all widths.
 
-  \item We characterize ensemble-size scaling: on CIFAR-10 the marginal
-        benefit of the $M$-th member is similar across all widths,
-        confirming that diversity is \emph{maintained} at higher
-        parameter counts.
+  \item \textbf{(Section~\ref{sec:scaling})} We characterize
+        ensemble-size scaling: on CIFAR-10 the marginal benefit of the
+        $M$-th member is similar across all widths, confirming that
+        diversity is \emph{maintained} at higher parameter counts.
 
-  \item We identify a \textbf{diversity--barrier dissociation}: on hard
-        tasks (STL-10, CIFAR-10), linear interpolation barriers collapse
-        with width, yet prediction diversity persists.  This shows that
-        weight-space connectivity does not imply functional similarity.
+  \item \textbf{(Section~\ref{sec:barrier})} We identify a
+        \textbf{diversity--barrier dissociation} in both directions:
+        on hard tasks, barriers collapse with width yet diversity persists;
+        on easy tasks, barriers remain high yet diversity is low.  Both
+        directions show that weight-space connectivity is an uninformative
+        proxy for functional diversity.
 
-  \item We provide multi-scale validation: (a)~per-class error rate predicts
-        per-class disagreement within CIFAR-10 with $r = 0.982$ ($p < 10^{-30}$);
-        (b)~pooling all 384 pairs across 6 datasets and 2 architectures,
-        the comprehensive Pearson correlation between accuracy and disagreement
-        is $r = 0.923$ ($p < 10^{-160}$); (c)~the cross-architecture correlation
-        (SmallCNN + ResNet) is $r = 0.954$.  These three levels of validation
-        rule out dataset, architecture, and resolution confounds.
+  \item \textbf{(Sections~\ref{sec:diversity}, \ref{sec:architecture})}
+        We provide multi-scale validation: (a)~per-class error rate
+        predicts per-class disagreement within CIFAR-10 with $r = 0.982$
+        ($p < 10^{-30}$); (b)~pooling all 384 pairs across 6 datasets
+        and 2 architectures, Pearson $r = 0.923$ ($p < 10^{-160}$),
+        with partial $r = 0.920$ controlling for parameter count;
+        (c)~cross-architecture (SmallCNN + ResNet) $r = 0.954$.
 
-  \item We show an ensemble compute efficiency advantage: two smaller
-        models outperform one wider model at the same parameter budget on
-        hard tasks ($+1.4$--$3.3$ pp for CNN; $+1.0$ pp for ResNet),
-        with the gap scaling inversely with the task accuracy level.
+  \item \textbf{(Section~\ref{sec:compute})} We show a compute
+        efficiency advantage: two smaller models outperform one wider
+        model at the same parameter budget ($+1.4$--$3.3$ pp for CNN;
+        $+1.0$ pp for ResNet), with the gap governed by remaining
+        accuracy headroom.
 
-  \item We demonstrate that overconfidence causes a critical OOD detection
-        failure: at width 256, the single model's AUROC for detecting
-        Gaussian-corrupted inputs collapses to 0.531 (near chance), while
-        the ensemble maintains 0.729---a $+0.198$ improvement.  This ties
-        the overconfidence scaling law directly to practical uncertainty
-        failure under distribution shift.
+  \item \textbf{(Section~\ref{sec:corrupted})} We demonstrate that
+        overconfidence causes an OOD detection failure: at width 256,
+        the single model's AUROC for Gaussian-corrupted inputs collapses
+        to 0.531 (near chance), while a 5-member ensemble achieves
+        0.729---a $+0.198$ improvement---directly linking the
+        overconfidence scaling law to practical uncertainty failure.
 \end{enumerate}
 
 %─────────────────────────────────────────────────────────────────────────────
