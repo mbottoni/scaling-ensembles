@@ -275,14 +275,15 @@ to avoid numerical issues.
 
 \paragraph{Architecture.}
 Our primary model is a \textsc{SmallCNN} with two convolutional blocks and
-a two-layer classifier head.  The \emph{width} multiplier
-$w \in \{16,32,64,128,256\}$ controls channel counts and classifier
-hidden size, yielding 38\,K to 9.6\,M parameters.  For MNIST we use a
-two-layer MLP with the same width parameter and $w \in \{32,64,128,256,512,1024\}$,
-yielding 27K to 1.9M parameters.  We additionally train a \textsc{ResNetCIFAR}
-with three residual stages (widths $w, 2w, 4w$) on CIFAR-10 across
-$w \in \{16,32,64,128\}$, yielding 55K to 3.2M parameters.  A small
-patch-transformer at widths 64--512 is described in Appendix~\ref{app:transformer}.
+a two-layer classifier head.  The \emph{width} multiplier controls channel
+counts and classifier hidden size.  For CIFAR-10 we use $w \in \{16,32,64,128,256\}$,
+yielding 38\,K to 9.6\,M parameters; for FashionMNIST, SVHN, and STL-10 we use
+$w \in \{16,32,64,128\}$ (up to 2.4\,M parameters).  For MNIST we use a
+two-layer MLP with $w \in \{32,64,128,256,512,1024\}$, yielding 27K to 1.9M
+parameters.  We additionally train a \textsc{ResNetCIFAR} with three residual
+stages (widths $w, 2w, 4w$) on CIFAR-10 across $w \in \{16,32,64,128\}$,
+yielding 78K to 4.9M parameters.  A small patch-transformer at widths 64--512
+is described in Appendix~\ref{app:transformer}.
 
 \paragraph{Training.}
 All models are trained with AdamW (lr$\,{=}10^{-3}$, weight
