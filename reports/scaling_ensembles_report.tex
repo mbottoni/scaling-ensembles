@@ -434,12 +434,13 @@ of diversity across all conditions we study.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.75\linewidth]{../outputs/series/paper-plots/accuracy_vs_disagreement.png}
-\caption{Individual model accuracy vs.\ pairwise disagreement across all
-$384$ data points (6 datasets, 2 architectures, widths 27K--9.6M parameters).
-Each point is one (dataset, architecture, width) combination.  Marker size
-scales with $\log(\text{parameters})$.  Pearson $r = 0.923$ ($p < 10^{-160}$);
-the dashed line is an OLS fit; the dotted curve is the theoretical prediction
-$2\varepsilon(1-\varepsilon)$ under error independence.}
+\caption{Individual model accuracy vs.\ pairwise disagreement.  Visible
+markers show per-(dataset, architecture, width) means; OLS and Pearson
+statistics are computed from all $384$ individual pairwise model comparisons
+(216 CNN $+$ 150 ResNet $+$ 18 summary-dataset aggregates), giving
+$r = 0.923$ ($p < 10^{-160}$).  Marker size scales with
+$\log(\text{parameters})$.  Dotted curve: theoretical $2\varepsilon(1-\varepsilon)$
+under error independence.}
 \label{fig:acc_disagree}
 \end{figure}
 
