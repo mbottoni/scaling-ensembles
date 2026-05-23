@@ -714,6 +714,15 @@ disagreement remains substantial at 22.1\% despite the barrier collapsing to nea
 The barrier shrank by 94\%; disagreement reduced by only 27\%---a clear dissociation.
 This is the diversity--barrier dissociation at its clearest.
 
+Notably, while STL-10's high disagreement is consistent with the difficulty
+hypothesis, its ensemble accuracy gain (1.2--2.0\,pp) is anomalously
+\emph{low} relative to its error rate of 36--43\%---far below what the
+gain-error law (Section~\ref{sec:gain_error}) predicts (${\approx}5$--$6$\,pp).
+As we discuss there, this discrepancy arises because STL-10's high error
+reflects data scarcity (5k training images) rather than intrinsic class
+ambiguity: models fail in correlated ways, limiting the ensemble's
+ability to exploit disagreement for accuracy improvement.
+
 \subsection{Corrupted-Input Evaluation}
 \label{sec:corrupted}
 
