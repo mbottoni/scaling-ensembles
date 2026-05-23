@@ -57,7 +57,7 @@ ${\approx}0.64$ across all widths.  This overconfidence causes OOD
 detection failure: at width 256, a single model's AUROC for detecting
 Gaussian-corrupted inputs collapses to 0.531 (near chance), while a
 5-member ensemble achieves 0.729.  We further show that two narrow models
-outperform one wide model with twice the parameters (+1.4--3.3\,pp),
+outperform one wide model with twice the parameters (+1.4--3.4\,pp),
 and identify a diversity--barrier dissociation: loss-landscape barriers
 collapse with width, yet functional diversity is preserved.  These results
 imply that deep ensembles remain practically valuable for large
@@ -135,8 +135,8 @@ task difficulty?
 
   \item \textbf{(Section~\ref{sec:compute})} We show a compute
         efficiency advantage: two smaller models outperform one wider
-        model with $2\times$ more parameters ($+1.4$--$3.3$ pp for CNN;
-        $+1.0$ pp for ResNet), with the gap governed by remaining
+        model with $2\times$ more parameters ($+1.4$--$3.4$ pp for CNN;
+        $+0.9$ pp for ResNet), with the gap governed by remaining
         accuracy headroom.
 
   \item \textbf{(Section~\ref{sec:corrupted})} We demonstrate that
@@ -747,26 +747,26 @@ Arch & Configuration & Params (total) & CIFAR-10 Accuracy & Advantage\\
 \midrule
 \multirow{6}{*}{CNN}
  & $2\times$ w=16 ens. & $2\times 38$k = 76k  & $75.4\%$ & \\
- & $1\times$ w=32 single & $152$k              & $73.0\%$ & $+2.4$\,pp\\
+ & $1\times$ w=32 single & $152$k              & $73.0\%$ & $+2.3$\,pp\\
 \cmidrule{2-5}
  & $2\times$ w=32 ens. & $2\times152$k = 304k & $76.9\%$ & \\
  & $1\times$ w=64 single & $603$k              & $75.5\%$ & $+1.4$\,pp\\
 \cmidrule{2-5}
  & $2\times$ w=64 ens. & $2\times603$k = 1.2M & $78.6\%$ & \\
- & $1\times$ w=128 single & $2.4$M             & $75.3\%$ & $+3.3$\,pp\\
+ & $1\times$ w=128 single & $2.4$M             & $75.3\%$ & $+3.4$\,pp\\
 \midrule
 \multirow{4}{*}{ResNet}
  & $2\times$ w=32 ens. & $2\times309$k = 618k & $82.0\%$ & \\
  & $1\times$ w=64 single & $1.2$M              & $82.0\%$ & $+0.0$\,pp\\
 \cmidrule{2-5}
  & $2\times$ w=64 ens. & $2\times1.2$M = 2.5M & $84.8\%$ & \\
- & $1\times$ w=128 single & $4.9$M             & $83.8\%$ & $+1.0$\,pp\\
+ & $1\times$ w=128 single & $4.9$M             & $83.9\%$ & $+0.9$\,pp\\
 \bottomrule
 \end{tabular}
 \caption{Ensemble compute efficiency: two narrow models vs.\ one wide model
 with approximately $2\times$ the parameter count.  CNN ensembles outperform
-the single model by $+1.4$--$3.3$\,pp at half the parameter count.
-ResNet ensembles show smaller gains ($0$--$1.0$\,pp), consistent with the
+the single model by $+1.4$--$3.4$\,pp at half the parameter count.
+ResNet ensembles show smaller gains ($0$--$0.9$\,pp), consistent with the
 difficulty hypothesis: ResNet achieves higher accuracy, leaving less room
 for ensemble improvement.}
 \label{tab:compute}
@@ -775,9 +775,9 @@ for ensemble improvement.}
 In every CNN case, the two-member ensemble achieves higher accuracy than the
 single model with approximately $2\times$ more parameters, with the
 $2{\times}$w=64 ensemble (1.2M total) beating $1{\times}$w=128 (2.4M) by
-3.3\,pp while using half the parameters.  For ResNetCIFAR, the gains are
+3.4\,pp while using half the parameters.  For ResNetCIFAR, the gains are
 smaller but the direction is consistent: $2{\times}$w=64 (2.5M total)
-beats $1{\times}$w=128 (4.9M) by $+1.0$\,pp.  The $2{\times}$w=32 vs.\
+beats $1{\times}$w=128 (4.9M) by $+0.9$\,pp.  The $2{\times}$w=32 vs.\
 $1{\times}$w=64 comparison is effectively tied (82.0\% each), reflecting
 that ResNet w=64 already achieves high accuracy (82.0\%), leaving little
 room for ensemble improvement.  This confirms that the magnitude of compute
@@ -1081,7 +1081,7 @@ failure directly to practical uncertainty failure.
 
 We further demonstrate that two-member ensembles of smaller models
 outperform single larger models with twice the parameter count
-(+1.4--3.3 pp for CNN), providing a practical argument for ensemble deployment.
+(+1.4--3.4 pp for CNN), providing a practical argument for ensemble deployment.
 The diversity--barrier dissociation (loss-landscape barriers collapse
 with width while functional diversity persists) explains why
 weight-space model merging underperforms ensembling on hard tasks.
