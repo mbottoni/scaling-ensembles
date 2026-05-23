@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.11.17)  22 MAY 2026 21:54
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.11.17)  22 MAY 2026 21:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -597,30 +597,30 @@ ries/paper-plots/barrier_vs_diversity.png>]
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 [10] [11] [12] [13]
-<../outputs/series/paper-plots/calibration_ece.png, id=300, 785.334pt x 315.579
+<../outputs/series/paper-plots/calibration_ece.png, id=299, 785.334pt x 315.579
 pt>
 File: ../outputs/series/paper-plots/calibration_ece.png Graphic file (type png)
 
 <use ../outputs/series/paper-plots/calibration_ece.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/calibration_ece.png  use
-d on input line 908.
+d on input line 920.
 (pdftex.def)             Requested size: 469.75502pt x 188.77101pt.
- [14 <../outputs/series/paper-plots/calibration_ece.png>]
-<../outputs/series/paper-plots/reliability_diagrams.png, id=308, 1002.947pt x 4
+<../outputs/series/paper-plots/reliability_diagrams.png, id=301, 1002.947pt x 4
 27.5975pt>
 File: ../outputs/series/paper-plots/reliability_diagrams.png Graphic file (type
  png)
 <use ../outputs/series/paper-plots/reliability_diagrams.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/reliability_diagrams.png
-  used on input line 928.
+  used on input line 940.
 (pdftex.def)             Requested size: 469.75502pt x 200.27272pt.
+ [14]
 <../outputs/series/paper-plots/error_decomposition.png, id=310, 641.597pt x 285
 .065pt>
 File: ../outputs/series/paper-plots/error_decomposition.png Graphic file (type 
 png)
 <use ../outputs/series/paper-plots/error_decomposition.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/error_decomposition.png 
- used on input line 948.
+ used on input line 960.
 (pdftex.def)             Requested size: 399.29463pt x 177.40833pt.
 <../outputs/series/paper-plots/per_class_diversity.png, id=312, 786.137pt x 315
 .9805pt>
@@ -628,24 +628,24 @@ File: ../outputs/series/paper-plots/per_class_diversity.png Graphic file (type
 png)
 <use ../outputs/series/paper-plots/per_class_diversity.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/per_class_diversity.png 
- used on input line 964.
+ used on input line 976.
 (pdftex.def)             Requested size: 469.75502pt x 188.81349pt.
-
-[15 <../outputs/series/paper-plots/reliability_diagrams.png>] [16 <../outputs/s
-eries/paper-plots/error_decomposition.png> <../outputs/series/paper-plots/per_c
-lass_diversity.png>] (./scaling_ensembles_report.aux)
+ [15 <../outputs/series/paper-plots/calibration_ece.png>] [16 <../outputs/serie
+s/paper-plots/reliability_diagrams.png> <../outputs/series/paper-plots/error_de
+composition.png>] [17 <../outputs/series/paper-plots/per_class_diversity.png>] 
+(./scaling_ensembles_report.aux)
 Package rerunfilecheck Info: File `scaling_ensembles_report.out' has not change
 d.
 (rerunfilecheck)             Checksum: FBCA65036FA2EB62E8913520282BE4EF;3681.
  ) 
 Here is how much of TeX's memory you used:
- 14782 strings out of 478268
- 237155 string characters out of 5846346
+ 14785 strings out of 478268
+ 237178 string characters out of 5846346
  579357 words of memory out of 5000000
  32464 multiletter control sequences out of 15000+600000
- 491375 words of font info for 201 fonts, out of 8000000 for 9000
+ 491435 words of font info for 202 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 67i,11n,77p,1021b,465s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 67i,11n,77p,1021b,459s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 }</usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb>
 </usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
@@ -669,10 +669,10 @@ dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2022/texmf-di
 st/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2022/texm
 f-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2022/texmf-
 dist/fonts/type1/public/cm-super/sfrm0800.pfb>
-Output written on scaling_ensembles_report.pdf (16 pages, 1536971 bytes).
+Output written on scaling_ensembles_report.pdf (17 pages, 1537926 bytes).
 PDF statistics:
- 444 PDF objects out of 1000 (max. 8388607)
- 360 compressed objects within 4 object streams
- 97 named destinations out of 1000 (max. 500000)
+ 448 PDF objects out of 1000 (max. 8388607)
+ 363 compressed objects within 4 object streams
+ 98 named destinations out of 1000 (max. 500000)
  49878 words of extra memory for PDF output out of 51595 (max. 10000000)
 
