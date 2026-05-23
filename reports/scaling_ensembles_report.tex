@@ -653,12 +653,12 @@ This is the diversity--barrier dissociation at its clearest.
 Corruption & Width & Params & Acc. & Ens.\ Gain & Single AUROC & Ens.\ AUROC\\
 \midrule
 Gaussian & 16  & 38.6k & 41.4\% & 1.73\,pp & 0.591 & 0.693 (+0.102)\\
-Gaussian & 64  & 603k  & 30.2\% & --       & 0.607 & 0.707 (+0.100)\\
+Gaussian & 64  & 603k  & 30.2\% & 0.71\,pp & 0.607 & 0.707 (+0.100)\\
 Gaussian & 128 & 2.40M & 39.6\% & 2.16\,pp & 0.684 & 0.773 (+0.089)\\
 Gaussian & 256 & 9.59M & 32.2\% & 1.46\,pp & 0.531 & 0.729 (+0.198)\\
 \midrule
 Blur     & 16  & 38.6k & 59.4\% & 5.22\,pp & 0.633 & 0.668 (+0.035)\\
-Blur     & 64  & 603k  & 60.5\% & --       & 0.629 & 0.649 (+0.020)\\
+Blur     & 64  & 603k  & 60.5\% & 4.68\,pp & 0.629 & 0.649 (+0.020)\\
 Blur     & 128 & 2.40M & 59.2\% & 4.98\,pp & 0.628 & 0.666 (+0.038)\\
 Blur     & 256 & 9.59M & 53.5\% & 5.48\,pp & 0.622 & 0.659 (+0.037)\\
 \bottomrule
@@ -769,7 +769,7 @@ ResNet achieves higher accuracy, leaving less room for ensemble improvement.}
 \end{table}
 
 In every CNN case, the two-member ensemble achieves higher accuracy than the
-single model with $2\times$ to $4\times$ more parameters, with the
+single model with approximately $2\times$ more parameters, with the
 $2{\times}$w=64 ensemble (1.2M total) beating $1{\times}$w=128 (2.4M) by
 3.3\,pp while using half the parameters.  For ResNetCIFAR, the gains are
 smaller but the direction is consistent: $2{\times}$w=64 (2.5M total)
