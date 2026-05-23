@@ -249,6 +249,8 @@ of $N$ examples we compute:
 \begin{align*}
   \mathrm{agreement}
   &= \frac{1}{N}\sum_n \mathbf{1}\{\hat{y}_a(x_n) = \hat{y}_b(x_n)\},\\
+  \mathrm{disagreement}
+  &= 1 - \mathrm{agreement},\\
   \mathrm{JS}(p_a,p_b)
   &= \tfrac{1}{2}\mathrm{KL}(p_a\|\tfrac{p_a+p_b}{2})
    + \tfrac{1}{2}\mathrm{KL}(p_b\|\tfrac{p_a+p_b}{2}),\\
