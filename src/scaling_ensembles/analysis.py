@@ -228,19 +228,117 @@ def write_ensemble_scaling_csv(
                 writer.writerow([width, m, mean, std])
 
 
+def find_optimal_temperature(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    n_steps: int = 100,
+) -> float:
+    """Grid search for the temperature T that minimises NLL on the given set."""
+    best_t = 1.0
+    best_nll = float("inf")
+    for t in torch.linspace(0.1, 5.0, n_steps):
+        scaled = logits / t.item()
+        nll = torch.nn.functional.cross_entropy(scaled, targets).item()
+        if nll < best_nll:
+            best_nll = nll
+            best_t = t.item()
+    return best_t
+
+
+def calibration_with_temperature_scaling(
+    logits_cache: dict[tuple[int, int], tuple[torch.Tensor, torch.Tensor]],
+    widths: list[int],
+) -> dict[int, dict[str, float]]:
+    """ECE for single models, temperature-scaled single models, and 2-member ensembles.
+
+    Temperature is fit on a 50% split of the eval set and evaluated on the other half.
+    This gives a fair comparison between temperature scaling and ensembling.
+    """
+    result: dict[int, dict[str, float]] = {}
+    rng = np.random.default_rng(0)
+
+    for width in widths:
+        seeds = [s for (w, s) in logits_cache if w == width]
+        if not seeds:
+            continue
+
+        single_eces, ts_eces, ens_eces = [], [], []
+
+        for seed in seeds:
+            logits, targets = logits_cache[(width, seed)]
+            n = len(targets)
+            idx = rng.permutation(n)
+            cal_idx = torch.from_numpy(idx[: n // 2])
+            test_idx = torch.from_numpy(idx[n // 2 :])
+
+            # Fit temperature on calibration split, evaluate on test split
+            opt_t = find_optimal_temperature(logits[cal_idx], targets[cal_idx])
+            ts_probs_test = (logits[test_idx] / opt_t).softmax(dim=1)
+            single_probs_test = logits[test_idx].softmax(dim=1)
+
+            single_eces.append(expected_calibration_error(single_probs_test, targets[test_idx]))
+            ts_eces.append(expected_calibration_error(ts_probs_test, targets[test_idx]))
+
+        # Ensemble ECE on full set (no temperature split needed)
+        for sa, sb in itertools.combinations(seeds, 2):
+            logits_a, tgts = logits_cache[(width, sa)]
+            logits_b, _ = logits_cache[(width, sb)]
+            ens_probs = 0.5 * (logits_a.softmax(dim=1) + logits_b.softmax(dim=1))
+            ens_eces.append(expected_calibration_error(ens_probs, tgts))
+
+        result[width] = {
+            "single_ece_mean": float(np.mean(single_eces)),
+            "single_ece_std": float(np.std(single_eces)),
+            "temp_scaled_ece_mean": float(np.mean(ts_eces)),
+            "temp_scaled_ece_std": float(np.std(ts_eces)),
+            "ensemble_ece_mean": float(np.mean(ens_eces)) if ens_eces else float("nan"),
+            "ensemble_ece_std": float(np.std(ens_eces)) if ens_eces else float("nan"),
+        }
+    return result
+
+
+def bootstrap_difference_test(
+    vals_a: list[float],
+    vals_b: list[float],
+    n_bootstrap: int = 2000,
+    rng: np.random.Generator | None = None,
+) -> dict[str, float]:
+    """Bootstrap two-sided test for difference of means: H0: mean_a == mean_b."""
+    if rng is None:
+        rng = np.random.default_rng(42)
+    a = np.array(vals_a)
+    b = np.array(vals_b)
+    obs_diff = a.mean() - b.mean()
+    pooled = np.concatenate([a, b])
+    null_diffs = []
+    for _ in range(n_bootstrap):
+        perm = rng.permutation(pooled)
+        null_diffs.append(perm[: len(a)].mean() - perm[len(a) :].mean())
+    p_value = float(np.mean(np.abs(null_diffs) >= abs(obs_diff)))
+    ci_lo, ci_hi = float(np.percentile(null_diffs, 2.5)), float(np.percentile(null_diffs, 97.5))
+    return {
+        "observed_difference": float(obs_diff),
+        "p_value": p_value,
+        "ci_lo_null": ci_lo,
+        "ci_hi_null": ci_hi,
+        "mean_a": float(a.mean()),
+        "mean_b": float(b.mean()),
+        "std_a": float(a.std()),
+        "std_b": float(b.std()),
+    }
+
+
 def write_calibration_csv(
     calibration: dict[int, dict[str, float]],
     path: Path,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    if not calibration:
+        return
+    first = next(iter(calibration.values()))
+    fieldnames = ["width"] + list(first.keys())
     with path.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["width", "single_ece_mean", "single_ece_std", "ensemble_ece_mean", "ensemble_ece_std", "ece_reduction"])
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
         for width in sorted(calibration):
-            d = calibration[width]
-            writer.writerow([
-                width,
-                d["single_ece_mean"], d["single_ece_std"],
-                d["ensemble_ece_mean"], d["ensemble_ece_std"],
-                d["ece_reduction"],
-            ])
+            writer.writerow({"width": width, **calibration[width]})

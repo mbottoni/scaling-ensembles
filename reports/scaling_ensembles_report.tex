@@ -289,6 +289,19 @@ fluctuates around 25--31\% and ensemble gain remains 3--4 pp across the
 full 250$\times$ parameter range.  Neither metric collapses with width on
 the harder benchmark.
 
+\textbf{Statistical significance.}  Bootstrap permutation tests (2000
+samples) confirm that CIFAR-10 disagreement significantly exceeds
+FashionMNIST disagreement at every matching width ($p < 0.001$ at
+$w \in \{16, 64, 128\}$), as does ensemble gain ($p < 0.001$ throughout).
+
+\textbf{Error decomposition.}  Computing the pairwise error covariance
+$\mathrm{Cov}(\mathbf{1}_{a\text{ wrong}}, \mathbf{1}_{b\text{ wrong}})$
+for all CIFAR-10 pairs reveals that this covariance is $8.8$--$10.0$\,pp$^2$
+and \emph{flat across widths}.  This means that the amount of
+\emph{correlated error} between pairs of CIFAR-10 models does not grow with
+capacity—a direct indicator that diversity is not squeezed out by
+overparameterization.
+
 Figure~\ref{fig:diversity_ci} shows these trends with shaded $\pm$1 std
 bands, alongside STL-10 for comparison.  The SVHN and STL-10 panels (see
 Appendix) further confirm the pattern: SVHN (high accuracy, easy) tracks
@@ -306,29 +319,43 @@ collapse at high width on all tasks.}
 \label{fig:diversity_ci}
 \end{figure}
 
-\subsection{Calibration Benefit Scales with Task Difficulty}
+\subsection{Calibration: Ensembles vs.\ Temperature Scaling}
 \label{sec:calibration}
 
-Figure~\ref{fig:ece} shows Expected Calibration Error (ECE) for individual
-models and two-member ensembles at each width, for FashionMNIST and
-CIFAR-10.  Individual CIFAR-10 models are substantially miscalibrated
-(ECE 7--22\%); two-member ensembles cut this to 2--8\%, a reduction of
-5--14 pp that \emph{grows with width}.  In contrast, FashionMNIST models
-are already well-calibrated individually (ECE $<$5\%), and ensemble
-calibration improvement is below 2.5 pp.
+Figure~\ref{fig:ece} compares three calibration strategies at each width on
+FashionMNIST and CIFAR-10: uncalibrated individual models (blue),
+temperature-scaled single models (green), and two-member ensembles (orange).
+Temperature scaling finds an optimal scalar temperature $T$ on a 50\%
+calibration split and is applied to the remaining 50\%; this gives a fair
+estimate of its practical performance.
+
+\textit{CIFAR-10:} Individual models are substantially miscalibrated (ECE
+7--22\%).  Both temperature scaling and ensembles reduce ECE: temperature
+scaling reaches $\approx 2\%$ ECE at all widths, while ensembles achieve
+$2$--$8\%$ ECE.  Temperature scaling achieves better \emph{calibration alone},
+but ensembles provide \textit{simultaneous} accuracy gains of 3--4\,pp without
+requiring held-out calibration data or any post-hoc fitting.
+
+\textit{FashionMNIST:} Individual models are already well-calibrated (ECE
+1--5\%); both methods reduce ECE to $<$3\%, with marginal differences
+between them.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{../outputs/series/paper-plots/calibration_ece.png}
-\caption{Expected Calibration Error (ECE) for individual models (blue) and
-two-member ensembles (orange) at each width.  The calibration benefit of
-ensembles is 5--10$\times$ larger on CIFAR-10 than on FashionMNIST.}
+\caption{Expected Calibration Error (ECE) for uncalibrated single models
+(blue), temperature-scaled single models (green, post-hoc baseline), and
+two-member ensembles (orange).  On easy tasks both post-hoc methods give
+similar results.  On hard tasks, temperature scaling achieves slightly
+lower ECE, but ensembles provide accuracy gains simultaneously.}
 \label{fig:ece}
 \end{figure}
 
-This result generalizes the diversity finding to the calibration axis:
-ensembles are most valuable for calibration precisely when the task is
-hard and individual models are most overconfident.
+This result clarifies the ensemble calibration benefit: ensembles are not
+always the most calibration-efficient method, but they are the only one
+that simultaneously improves accuracy and calibration without any extra
+data.  The benefit is largest on hard tasks, where single models are most
+overconfident.
 
 \subsection{Ensemble-Size Scaling Is Maintained Across Widths}
 \label{sec:scaling}

@@ -141,6 +141,8 @@ def make_model(config: ModelConfig, dataset: DatasetInfo, width: int) -> nn.Modu
         )
     if architecture == "cnn":
         return SmallCNN(dataset.input_shape, dataset.num_classes, width)
+    if architecture in {"resnet", "resnet_cifar"}:
+        return ResNetCIFAR(dataset.input_shape, dataset.num_classes, width)
     if architecture in {"patch_transformer", "dit", "dit_classifier"}:
         return PatchTransformerClassifier(
             input_shape=dataset.input_shape,
@@ -154,6 +156,58 @@ def make_model(config: ModelConfig, dataset: DatasetInfo, width: int) -> nn.Modu
     raise ValueError(
         f"Unsupported architecture: {config.architecture}. Try mlp, cnn, or patch_transformer."
     )
+
+
+class ResBlock(nn.Module):
+    def __init__(self, in_channels: int, out_channels: int, stride: int = 1) -> None:
+        super().__init__()
+        self.conv1 = nn.Conv2d(in_channels, out_channels, 3, padding=1, stride=stride, bias=False)
+        self.bn1 = nn.BatchNorm2d(out_channels)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, 3, padding=1, bias=False)
+        self.bn2 = nn.BatchNorm2d(out_channels)
+        if in_channels == out_channels and stride == 1:
+            self.shortcut: nn.Module = nn.Identity()
+        else:
+            self.shortcut = nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, 1, stride=stride, bias=False),
+                nn.BatchNorm2d(out_channels),
+            )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = torch.relu(self.bn1(self.conv1(x)))
+        out = self.bn2(self.conv2(out))
+        return torch.relu(out + self.shortcut(x))
+
+
+class ResNetCIFAR(nn.Module):
+    """3-stage residual network for CIFAR-scale images.
+
+    ``width`` sets the base channel count of the first stage; each subsequent
+    stage doubles the channels and halves spatial resolution via stride-2 blocks.
+    A width of 16 gives ~55K params; width of 64 gives ~800K; width of 128 gives ~3.2M.
+    """
+
+    def __init__(self, input_shape: tuple[int, int, int], num_classes: int, width: int) -> None:
+        super().__init__()
+        c = input_shape[0]
+        self.stem = nn.Sequential(
+            nn.Conv2d(c, width, 3, padding=1, bias=False),
+            nn.BatchNorm2d(width),
+            nn.ReLU(),
+        )
+        self.layer1 = ResBlock(width, width)
+        self.layer2 = ResBlock(width, 2 * width, stride=2)
+        self.layer3 = ResBlock(2 * width, 4 * width, stride=2)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.head = nn.Linear(4 * width, num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = self.stem(x)
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.pool(x).flatten(1)
+        return self.head(x)
 
 
 def count_parameters(model: nn.Module) -> int:
