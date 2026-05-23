@@ -1131,13 +1131,22 @@ attention-based architectures.  The corrupted-CIFAR-10 evaluation uses a
 single severity level per corruption type; a full CIFAR-10-C evaluation
 (19 corruption types, 5 severities) would strengthen the OOD claim.
 Additionally, our three seeds per width may produce variance in
-pairwise metrics for smaller datasets (SVHN, STL-10).  STL-10's
-smaller training set (5k vs 50k for CIFAR-10) may confound capacity effects
-with data efficiency effects for that dataset.  All experiments use AdamW
-without data augmentation; standard augmentations (random crops, flips) for
-CIFAR-10 would likely raise overall accuracy and may shift the difficulty
-threshold---we leave the effect of augmentation on ensemble diversity for
-future work.
+pairwise metrics for smaller datasets (SVHN, STL-10).
+
+STL-10's low ensemble gain despite high error (Section~\ref{sec:gain_error})
+we attribute primarily to data scarcity (5k training images), but
+architectural mismatch may also contribute: our SmallCNN was designed for
+32$\times$32 inputs and applied unmodified to 96$\times$96 STL-10 images.
+Either cause produces the same effect (correlated epistemic failures), but
+the relative contributions are not isolated here.
+
+All experiments use AdamW without data augmentation; standard augmentations
+(random crops, flips) for CIFAR-10 would likely raise overall accuracy
+and may shift the difficulty threshold---we leave the effect of augmentation
+on ensemble diversity for future work.  Finally, our gain-error coefficient
+($\approx$14\%) is specific to 2-member ensembles; the analogous coefficient
+for $M$-member ensembles ($M > 2$) would require extending
+Remark~\ref{rem:coefficient} to account for majority-vote dynamics.
 
 \paragraph{Architecture robustness.}
 Our ResNet comparison (Section~\ref{sec:architecture}) confirms that the
