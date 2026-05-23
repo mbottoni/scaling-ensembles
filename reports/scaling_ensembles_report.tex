@@ -241,17 +241,23 @@ to avoid numerical issues.
 \label{sec:setup}
 
 \paragraph{Architecture.}
-We use a \textsc{SmallCNN} with two convolutional blocks and a two-layer
-classifier head.  The \emph{width} multiplier $w \in \{16,32,64,128,256\}$
-controls channel counts and classifier size, yielding 38\,K to 9.6\,M
-parameters.  We also experiment with a small patch-transformer classifier
-at widths 64--512.
+Our primary model is a \textsc{SmallCNN} with two convolutional blocks and
+a two-layer classifier head.  The \emph{width} multiplier
+$w \in \{16,32,64,128,256\}$ controls channel counts and classifier
+hidden size, yielding 38\,K to 9.6\,M parameters.  For MNIST we use a
+two-layer MLP with the same width parameter and $w \in \{32,64,128,256,512,1024\}$,
+yielding 27K to 1.9M parameters.  We additionally train a \textsc{ResNetCIFAR}
+with three residual stages (widths $w, 2w, 4w$) on CIFAR-10 across
+$w \in \{16,32,64,128\}$, yielding 55K to 3.2M parameters.  A small
+patch-transformer at widths 64--512 is described in Appendix~\ref{app:transformer}.
 
 \paragraph{Training.}
 All models are trained with AdamW (lr$\,{=}10^{-3}$, weight
-decay$\,{=}10^{-4}$) for 40 epochs with gradient clipping at norm~1.
-Ten random seeds are used per width for CIFAR-10 (the primary benchmark);
-three to five seeds are used for other datasets.
+decay$\,{=}10^{-4}$) with gradient clipping at norm~1.  Training lengths
+are tuned per dataset: 40 epochs for CIFAR-10 (the primary benchmark),
+20 epochs for FashionMNIST/SVHN, 50 epochs for ResNet, and 10 epochs
+for MNIST MLP.  Ten random seeds are used per width for CIFAR-10 and
+MNIST MLP; three to five seeds are used for other datasets.
 
 \paragraph{Datasets.}
 Table~\ref{tab:datasets} summarizes the six benchmarks.  We order them
