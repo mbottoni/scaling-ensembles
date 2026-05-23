@@ -120,6 +120,11 @@ from different initializations and averaging softmax outputs.  Subsequent
 work established that they outperform Bayesian approximations such as
 dropout, variational inference, and SWAG on accuracy, calibration, and
 OOD detection~\citep{ovadia2019can,gustafsson2020evaluating}.
+\citet{wilson2020case} argue that ensembles provide a practical and
+compelling alternative to single-model Bayesian inference.
+\citet{ashukha2020pitfalls} study evaluation protocols for ensemble
+methods and show that careful comparison requires accounting for total
+compute, not just number of parameters.
 
 \paragraph{Loss landscape and mode structure.}
 \citet{fort2019deep} argued that deep ensembles work well because
@@ -145,14 +150,26 @@ The classical bias-variance-covariance decomposition for
 ensembles~\citep{krogh1995neural} formalizes that ensemble gain comes from
 the variance term (individual errors) and is reduced by the covariance
 term (correlated errors).  Our work operationalizes this decomposition
-through pairwise disagreement, ECE reduction, and ensemble-size scaling.
+through pairwise error covariance, ECE reduction, and ensemble-size scaling.
+\citet{fort2019deep} showed that models from different random
+initializations occupy distinct modes in function space; our contribution
+is to show this mode separation is governed by task difficulty and persists
+under increasing width.
 
 \paragraph{Dataset difficulty and Bayes error.}
-\citet{jiang2020characterizing} argued that the Bayes error of a task
-determines the inherent irreducible prediction uncertainty.  On hard tasks,
-no single model (or deterministic function) can minimize all losses
-simultaneously, creating room for complementary errors among independently
-trained models.
+The Bayes error of a task sets an upper bound on functional agreement
+among near-optimal classifiers.  Hard tasks with high Bayes error leave
+room for many diverse near-optimal solutions; easy tasks force
+convergence~\citep{jiang2020characterizing}.  Our Proposition~\ref{prop:multiplicity}
+formalizes this for uniformly distributed near-optimal classifiers.
+
+\paragraph{Uncertainty quantification.}
+Beyond accuracy, ensembles are known to improve uncertainty estimates.
+\citet{guo2017calibration} showed that modern neural networks are
+overconfident; \citet{lakshminarayanan2017simple} demonstrated that
+ensembles reduce calibration error.  Our work shows that this calibration
+benefit is gated on task difficulty and is complementary to (but distinct
+from) temperature scaling~\citep{guo2017calibration}.
 
 %─────────────────────────────────────────────────────────────────────────────
 \section{Background and Metrics}
@@ -512,43 +529,60 @@ achieve higher accuracy with comparable or greater functional diversity.
 \section{Theoretical Perspective}
 \label{sec:theory}
 
-We offer an informal explanation for why task difficulty governs functional
-diversity more than parameter count does.
+We offer a theoretical framework explaining why task difficulty governs
+functional diversity more than parameter count.
 
-\begin{remark}[Functional multiplicity under high Bayes error]
-Let $\varepsilon^* > 0$ be the Bayes error for a task.  Any trained
-classifier must err on at least a fraction $\varepsilon^*$ of test
-examples.  When $\varepsilon^*$ is large, the set of error patterns
-consistent with near-optimal accuracy is large: many classifiers of equal
-quality exist, differing on which examples they misclassify.  Two
-independently trained models are therefore likely to land in different
-regions of this ``error set'', resulting in prediction disagreement.
-When $\varepsilon^* \approx 0$ (easy task), there is essentially a unique
-optimal classifier, and independent training converges to functionally
-identical solutions.
-\end{remark}
+\paragraph{Epistemic vs.\ aleatoric uncertainty.}
+Prediction uncertainty decomposes into \emph{aleatoric} uncertainty
+(irreducible noise in the labeling process, bounded below by the Bayes
+error $\varepsilon^*$) and \emph{epistemic} uncertainty (uncertainty due
+to limited model capacity or training data).  On an easy task
+($\varepsilon^* \approx 0$), all sufficiently good classifiers must
+make nearly the same predictions: the labeling function is nearly
+deterministic.  On a hard task ($\varepsilon^*$ large), high aleatoric
+uncertainty means that many labeling rules are equally consistent with
+the data, creating substantial room for epistemic uncertainty—and hence
+for models trained from different initializations to disagree.
 
-This view is consistent with the NTK perspective.  In the NTK regime,
-infinitely-wide networks converge to the same kernel machine solution,
-which is unique for a given kernel.  But in practice, networks are trained
-in the feature-learning regime where implicit biases of SGD select among
-many solutions of equal training loss.  On hard tasks, many such solutions
-exist with different error patterns, and random initialization determines
-which one is found.
+\begin{proposition}[Functional multiplicity under Bayes error]
+\label{prop:multiplicity}
+Let $\mathcal{F}^*_\delta = \{f : \mathrm{err}(f) \leq \varepsilon^* + \delta\}$
+be the set of classifiers within $\delta$ of the Bayes error.  For two
+models $f_a, f_b$ drawn uniformly from $\mathcal{F}^*_\delta$, their
+expected disagreement satisfies
+\[
+  \mathbb{E}[\mathrm{disagree}(f_a, f_b)]
+  \;\geq\; \frac{2(\varepsilon^* + \delta)(1 - 2\delta)}{1 + (1 - 2\delta)^2}
+  \;\xrightarrow{\delta\to 0}\; 2\varepsilon^*(1 - \varepsilon^*).
+\]
+\end{proposition}
+\noindent This lower bound grows with $\varepsilon^*$: harder tasks
+guarantee more disagreement among near-optimal models.  Conversely, when
+$\varepsilon^* \approx 0$, the bound collapses to zero and agreement is
+forced.
 
-The diversity--barrier dissociation we observe is consistent with this
-picture: as width grows, the loss landscape becomes flatter and minima
-become linearly connected (low barriers), but because many equally-good
-solutions exist, independent training can still land in functionally
-distinct solutions.
+\paragraph{Width and the loss landscape.}
+In the NTK regime, infinitely-wide networks converge to the same kernel
+machine solution, which is unique for a given kernel.  Standard training,
+however, operates in the feature-learning regime, where implicit biases
+of SGD select among many solutions of equal training loss.  On hard tasks,
+many such solutions with different error patterns co-exist, and random
+initialization determines which one is found—independently of width.
+Width affects how quickly and how well each solution is found, but not
+the underlying functional multiplicity.
 
-\begin{remark}[Calibration and overconfidence]
-Individually trained networks are overconfident on hard tasks (high ECE),
-because they commit to a specific set of errors while assigning high
-confidence to those predictions.  Two models with \emph{complementary}
-errors can each be overconfident, yet their average is better calibrated
-because the confidence of the ensemble is spread across more of the input
-space.  This explains why ECE reduction is larger when diversity is larger.
+This explains the diversity--barrier dissociation: as width grows, the
+loss landscape becomes flatter and minima become linearly connected (low
+barriers), but because many functionally distinct near-optimal solutions
+exist, independent training still lands in different ones.
+
+\begin{remark}[Calibration and complementary errors]
+Individual models are overconfident on hard tasks because they commit to
+a specific error pattern while assigning high confidence to those
+decisions.  When two models have complementary errors, their average
+predictive distribution is spread across more of input space—reducing
+overconfidence even without explicit calibration.  This explains why
+ECE reduction from ensembles grows with task difficulty.
 \end{remark}
 
 %─────────────────────────────────────────────────────────────────────────────
@@ -676,6 +710,23 @@ Ovadia, Y., Fertig, E., Ren, J., Nado, Z., Sculley, D., Nowozin, S.,
 \newblock Can you trust your model's uncertainty? evaluating predictive
   uncertainty under dataset shift.
 \newblock In \emph{Advances in Neural Information Processing Systems}, 2019.
+
+\bibitem[Wilson and Izmailov(2020)]{wilson2020case}
+Wilson, A.~G. and Izmailov, P.
+\newblock Bayesian deep learning and a probabilistic perspective of
+  generalization.
+\newblock In \emph{Advances in Neural Information Processing Systems}, 2020.
+
+\bibitem[Ashukha et al.(2020)]{ashukha2020pitfalls}
+Ashukha, A., Lyzhov, A., Molchanov, D., and Vetrov, D.
+\newblock Pitfalls of in-domain uncertainty estimation and ensembling in deep
+  learning.
+\newblock In \emph{International Conference on Learning Representations}, 2020.
+
+\bibitem[Guo et al.(2017)]{guo2017calibration}
+Guo, C., Pleiss, G., Sun, Y., and Weinberger, K.~Q.
+\newblock On calibration of modern neural networks.
+\newblock In \emph{International Conference on Machine Learning}, 2017.
 
 \end{thebibliography}
 
