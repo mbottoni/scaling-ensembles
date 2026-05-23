@@ -150,7 +150,7 @@ def main() -> None:
         agg_acc.extend(accs)
         agg_disagree.extend([d / 100 for d in disagrees])
 
-    # Fit and plot regression line (from all individual pairs, n=384)
+    # Fit and plot regression line (from all pairs + dataset aggregates; n computed dynamically)
     if all_pairs_acc:
         errors = [1 - a for a in all_pairs_acc]
         disagrees_pct = [d * 100 for d in all_pairs_disagree]
