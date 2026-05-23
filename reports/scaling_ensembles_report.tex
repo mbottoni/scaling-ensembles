@@ -760,13 +760,20 @@ as ResNet achieves 83.8\% accuracy (closer to the task ceiling), fewer
 confusable examples remain for independent errors to occur.
 
 \textbf{Cross-architecture accuracy-diversity correlation.}  Pooling
-all 9 data points (5 SmallCNN widths $\times$ 5 + 4 ResNet widths on
+all 9 data points (5 SmallCNN widths $+$ 4 ResNet widths on
 CIFAR-10), the Pearson correlation between per-width error rate and
 disagreement is $r = 0.954$, confirming that the accuracy--diversity
 relationship holds across model families.  Ensemble gain remains
 positive and substantial (${\geq}2.5$ pp) even for the best-performing
 ResNet, confirming that the ensemble benefit does not vanish with
 improved architecture.
+
+\textbf{Error covariance.}  For ResNet, pairwise error covariance is
+$4.2$--$5.1$\,pp$^2$ and flat across widths (vs.\ $8.8$--$10.0$\,pp$^2$
+for SmallCNN).  The lower absolute covariance reflects ResNet's higher
+accuracy (lower error rates reduce the scale of the covariance term), but
+the flatness across widths confirms---across both architectures---that
+correlated failures do not grow with capacity.
 
 \IfFileExists{../outputs/series/paper-plots/architecture_comparison.png}{%
 \begin{figure}[h]
