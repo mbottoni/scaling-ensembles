@@ -673,8 +673,8 @@ ensemble maintains strong detection (0.729).}
 \end{table}
 
 Distribution shift exposes complementary aspects of ensemble utility.
-Under blur, all widths show similarly degraded accuracy (${\approx}55$--$60\%$),
-and ensemble gain rises to ${\approx}5$ pp---higher than on clean CIFAR-10---
+Under Gaussian blur, all widths show similarly degraded accuracy (${\approx}53$--$61\%$),
+and ensemble gain is $4.7$--$5.5$ pp---higher than on clean CIFAR-10---
 suggesting that individual models learn complementary representations of
 corrupted inputs.
 
@@ -983,10 +983,11 @@ Our results support ensemble deployment for large models on hard tasks.
 The claim that overparameterization makes ensembles redundant does not
 hold at the scale and task range we study.  Based on our findings, we
 suggest the following heuristic: if a task's best single-model accuracy
-is below $\sim$85\%, ensembles provide substantial gains in both accuracy
-(3--4 pp) and calibration (5--14 pp ECE reduction); if accuracy exceeds
-$\sim$90\%, temperature scaling is comparably effective for calibration,
-and ensembles provide diminishing gains.  The ensemble-size scaling
+is below $\sim$85\%, ensembles provide meaningful accuracy gains (1.5--4 pp,
+depending on difficulty) and calibration benefits; at CIFAR-10-level difficulty
+($\sim$75\% accuracy), gains reach 3--4 pp accuracy and 5--14 pp ECE reduction.
+If accuracy exceeds $\sim$90\%, temperature scaling is comparably effective for
+calibration, and ensembles provide diminishing gains ($<1$ pp).  The ensemble-size scaling
 curves (Figure~\ref{fig:ensemble_scaling}) show that practitioners can
 expect $7$--$8$\,pp accuracy gain from a 10-member ensemble on CIFAR-10,
 regardless of model capacity.
