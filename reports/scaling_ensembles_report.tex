@@ -449,9 +449,11 @@ under error independence.}
 \includegraphics[width=\linewidth]{../outputs/series/paper-plots/diversity_with_ci.png}
 \caption{Pairwise disagreement, ensemble gain, and linear interpolation
 barrier vs.\ parameter count with $\pm1$ std shading.  Disagreement and
-gain remain stable on hard tasks (CIFAR-10, STL-10) but collapse on
+gain remain stable on hard tasks (CIFAR-10, STL-10) but are low on
 easy tasks (FashionMNIST) regardless of model capacity.  Loss barriers
-collapse at high width on all tasks.}
+collapse with width on hard tasks (CIFAR-10, STL-10) but remain high on
+easy tasks (FashionMNIST, SVHN)---showing that barriers track neither
+difficulty nor diversity.}
 \label{fig:diversity_ci}
 \end{figure}
 
@@ -568,21 +570,28 @@ substantial (cf.\ left panel, same widths).
 \includegraphics[width=0.6\linewidth]{../outputs/series/paper-plots/barrier_vs_diversity.png}
 \caption{Weight-space connectivity (barrier) vs.\ function-space
 diversity (disagreement) for each width $\times$ dataset combination.
-Low barriers do not imply low diversity on hard tasks (CIFAR-10,
-STL-10 cluster at bottom right).}
+The dissociation runs in both directions: hard tasks (CIFAR-10, STL-10)
+cluster at bottom-right (low barriers, high diversity); easy tasks
+(FashionMNIST, SVHN) cluster at top-left (high barriers, low diversity).
+Barriers are uninformative predictors of functional diversity.}
 \label{fig:barrier_diversity}
 \end{figure}
 
-Figure~\ref{fig:barrier_diversity} makes this explicit: CIFAR-10 and
-STL-10 points at high width lie in the bottom-right quadrant (low barrier,
-high disagreement), while FashionMNIST points stay near the top-left (high
-barrier, low disagreement).  The correlation between barriers and diversity
-\emph{reverses} direction across tasks.
+Figure~\ref{fig:barrier_diversity} makes this explicit in both directions.
+On hard tasks (CIFAR-10, STL-10), wide-model points lie in the
+bottom-right quadrant: \emph{low barriers, yet high disagreement}---the
+models are linearly weight-connected but remain functionally distinct.
+On easy tasks (FashionMNIST, SVHN), points cluster in the top-left:
+\emph{high barriers, yet low disagreement}---the models are not
+weight-connected, yet they are functionally similar.  Both directions
+show that weight-space geometry is a poor proxy for functional diversity:
+neither low barriers nor high barriers predict the ensemble benefit.
 
-This dissociation has a practical implication: barrier-based metrics
-cannot serve as proxies for ensemble diversity.  A low barrier tells us
-that the two minima are linearly connected in weight space, but it does
-not tell us that the models make the same predictions.
+This two-directional dissociation has a practical implication: methods
+that rely on weight-space metrics (loss barriers, linear mode connectivity)
+to predict or encourage diversity will systematically fail on both easy
+tasks (where high barriers coexist with low diversity) and on hard,
+wide-model settings (where low barriers coexist with high diversity).
 
 \subsection{New Datasets: SVHN and STL-10}
 \label{sec:new_datasets}
@@ -984,9 +993,13 @@ attention-based architectures.  The corrupted-CIFAR-10 evaluation uses a
 single severity level per corruption type; a full CIFAR-10-C evaluation
 (19 corruption types, 5 severities) would strengthen the OOD claim.
 Additionally, our three seeds per width may produce variance in
-pairwise metrics for smaller datasets (SVHN, STL-10).  Finally, STL-10's
+pairwise metrics for smaller datasets (SVHN, STL-10).  STL-10's
 smaller training set (5k vs 50k for CIFAR-10) may confound capacity effects
-with data efficiency effects for that dataset.
+with data efficiency effects for that dataset.  All experiments use AdamW
+without data augmentation; standard augmentations (random crops, flips) for
+CIFAR-10 would likely raise overall accuracy and may shift the difficulty
+threshold---we leave the effect of augmentation on ensemble diversity for
+future work.
 
 \paragraph{Architecture robustness.}
 Our ResNet comparison (Section~\ref{sec:architecture}) confirms that the
