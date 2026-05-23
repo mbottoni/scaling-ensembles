@@ -57,7 +57,7 @@ ${\approx}0.64$ across all widths.  This overconfidence causes OOD
 detection failure: at width 256, a single model's AUROC for detecting
 Gaussian-corrupted inputs collapses to 0.531 (near chance), while a
 5-member ensemble achieves 0.729.  We further show that two narrow models
-outperform one wide model at the same parameter budget (+1.4--3.3\,pp),
+outperform one wide model with twice the parameters (+1.4--3.3\,pp),
 and identify a diversity--barrier dissociation: loss-landscape barriers
 collapse with width, yet functional diversity is preserved.  These results
 imply that deep ensembles remain practically valuable for large
@@ -135,7 +135,7 @@ task difficulty?
 
   \item \textbf{(Section~\ref{sec:compute})} We show a compute
         efficiency advantage: two smaller models outperform one wider
-        model at the same parameter budget ($+1.4$--$3.3$ pp for CNN;
+        model with $2\times$ more parameters ($+1.4$--$3.3$ pp for CNN;
         $+1.0$ pp for ResNet), with the gap governed by remaining
         accuracy headroom.
 
@@ -730,9 +730,9 @@ the diversity pattern is not an artifact of the number of training epochs.
 \label{sec:compute}
 
 A practical question is whether two narrow models trained as an ensemble
-outperform a single wider model at the same total parameter budget.
+outperform a single wider model with twice the total parameter count.
 Table~\ref{tab:compute} compares two-member ensembles of smaller models
-to single models of comparable parameter count.
+to single models with approximately $2\times$ the parameter count.
 
 \begin{table}[h]
 \centering
@@ -761,10 +761,11 @@ Arch & Configuration & Params (total) & CIFAR-10 Accuracy & Advantage\\
 \bottomrule
 \end{tabular}
 \caption{Ensemble compute efficiency: two narrow models vs.\ one wide model
-at matched total parameter count.  CNN ensembles outperform single models
-by $+1.4$--$3.3$\,pp using fewer total parameters.  ResNet ensembles show
-smaller gains ($0$--$1.0$\,pp), consistent with the difficulty hypothesis:
-ResNet achieves higher accuracy, leaving less room for ensemble improvement.}
+with approximately $2\times$ the parameter count.  CNN ensembles outperform
+the single model by $+1.4$--$3.3$\,pp at half the parameter count.
+ResNet ensembles show smaller gains ($0$--$1.0$\,pp), consistent with the
+difficulty hypothesis: ResNet achieves higher accuracy, leaving less room
+for ensemble improvement.}
 \label{tab:compute}
 \end{table}
 
@@ -829,7 +830,7 @@ confusable examples remain for independent errors to occur.
 \textbf{Cross-architecture accuracy-diversity correlation.}  Pooling
 all 9 data points (5 SmallCNN widths $+$ 4 ResNet widths on
 CIFAR-10), the Pearson correlation between per-width error rate and
-disagreement is $r = 0.954$, confirming that the accuracy--diversity
+disagreement is $r = 0.954$ ($p < 10^{-4}$), confirming that the accuracy--diversity
 relationship holds across model families.  Ensemble gain remains
 positive and substantial (${\geq}2.5$ pp) even for the best-performing
 ResNet, confirming that the ensemble benefit does not vanish with
@@ -1053,8 +1054,8 @@ a 5-member ensemble maintains 0.729---a finding that ties calibration
 failure directly to practical uncertainty failure.
 
 We further demonstrate that two-member ensembles of smaller models
-outperform single larger models at the same total parameter budget
-(+1.4--3.3 pp), providing a practical argument for ensemble deployment.
+outperform single larger models with twice the parameter count
+(+1.4--3.3 pp for CNN), providing a practical argument for ensemble deployment.
 The diversity--barrier dissociation (loss-landscape barriers collapse
 with width while functional diversity persists) explains why
 weight-space model merging underperforms ensembling on hard tasks.
