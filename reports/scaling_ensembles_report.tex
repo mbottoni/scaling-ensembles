@@ -1040,10 +1040,23 @@ to the task's Bayes error, not the architectural family.
 
 \paragraph{Future directions.}
 Key open directions include: extending to larger-scale architectures
-(ViT, ResNet-50) and harder datasets (ImageNet, CIFAR-100 with 100-class
-difficulty); studying mixed-architecture ensembles; theoretical
-characterization of the diversity--barrier dissociation; and connecting
-to ensemble distillation and Bayesian deep learning.
+(ViT, ResNet-50) and harder datasets (ImageNet); studying mixed-architecture
+ensembles; theoretical characterization of the diversity--barrier
+dissociation; and connecting to ensemble distillation and Bayesian deep
+learning.
+
+\paragraph{Broader impact.}
+This work advances understanding of when deep ensembles provide practical
+benefit.  Our main finding---that diversity is governed by task difficulty
+rather than model size---is immediately actionable: practitioners working
+on genuinely hard tasks (medical imaging, autonomous driving, scientific
+discovery) can expect ensemble diversity to be maintained even with
+overparameterized models, justifying the additional compute.  On easy tasks
+or applications where single-model accuracy already saturates, ensembles
+provide diminishing diversity returns, and temperature scaling may suffice
+for calibration.  We foresee no negative societal impacts from this work;
+better-calibrated uncertainty estimates benefit safety-critical applications
+where overconfident predictions are harmful.
 
 %─────────────────────────────────────────────────────────────────────────────
 \section{Conclusion}
