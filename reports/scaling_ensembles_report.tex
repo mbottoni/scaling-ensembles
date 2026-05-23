@@ -430,8 +430,14 @@ Figure~\ref{fig:acc_disagree} pools all pairwise data across datasets,
 architectures, and widths ($n = 384$ pairs).  The Pearson correlation
 between individual model accuracy and disagreement is $r = 0.923$
 ($p < 10^{-160}$); Spearman $\rho = 0.861$ ($p < 10^{-114}$) confirms
-the relationship is not driven by distributional assumptions.  Accuracy
-is a universal predictor of diversity across all conditions we study.
+the relationship is not driven by distributional assumptions.  To
+directly test whether parameter count confounds the relationship, we
+compute the partial correlation between accuracy and disagreement
+\emph{controlling} for $\log(\text{params})$: the partial $r = 0.920$
+($p < 10^{-157}$), nearly identical to the marginal $r = 0.923$, while
+the direct correlation between parameter count and disagreement is only
+$r = 0.190$.  Accuracy is a universal predictor of diversity;
+parameter count is not.
 
 \begin{figure}[h]
 \centering
