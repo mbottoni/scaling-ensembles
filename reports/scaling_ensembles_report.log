@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.11.17)  22 MAY 2026 21:42
+This is pdfTeX, Version 3.141592653-2.6-1.40.24 (TeX Live 2022) (preloaded format=pdflatex 2022.11.17)  22 MAY 2026 21:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -540,115 +540,97 @@ File: ../outputs/series/paper-plots/diversity_accuracy_plane.png Graphic file (
 type png)
 <use ../outputs/series/paper-plots/diversity_accuracy_plane.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/diversity_accuracy_plane
-.png  used on input line 276.
+.png  used on input line 288.
 (pdftex.def)             Requested size: 413.3867pt x 310.03595pt.
-
+ [4]
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[4]
-<../outputs/series/paper-plots/diversity_with_ci.png, id=211, 929.874pt x 279.4
+[5 <../outputs/series/paper-plots/diversity_accuracy_plane.png>]
+<../outputs/series/paper-plots/diversity_with_ci.png, id=219, 929.874pt x 279.4
 44pt>
 File: ../outputs/series/paper-plots/diversity_with_ci.png Graphic file (type pn
 g)
 <use ../outputs/series/paper-plots/diversity_with_ci.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/diversity_with_ci.png  u
-sed on input line 355.
+sed on input line 367.
 (pdftex.def)             Requested size: 469.75502pt x 141.1714pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[5 <../outputs/series/paper-plots/diversity_accuracy_plane.png>]
-<../outputs/series/paper-plots/overconfidence_vs_width.png, id=220, 713.064pt x
+ [6 <../outputs/series/paper-plots/diversity_with_ci.png>]
+<../outputs/series/paper-plots/overconfidence_vs_width.png, id=229, 713.064pt x
  279.444pt>
 File: ../outputs/series/paper-plots/overconfidence_vs_width.png Graphic file (t
 ype png)
 <use ../outputs/series/paper-plots/overconfidence_vs_width.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/overconfidence_vs_width.
-png  used on input line 389.
+png  used on input line 401.
 (pdftex.def)             Requested size: 469.75502pt x 184.10101pt.
-
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[6 <../outputs/series/paper-plots/diversity_with_ci.png>]
-<../outputs/series/paper-plots/ensemble_size_scaling.png, id=229, 713.064pt x 2
+<../outputs/series/paper-plots/ensemble_size_scaling.png, id=232, 713.064pt x 2
 79.444pt>
 File: ../outputs/series/paper-plots/ensemble_size_scaling.png Graphic file (typ
 e png)
 <use ../outputs/series/paper-plots/ensemble_size_scaling.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/ensemble_size_scaling.pn
-g  used on input line 416.
+g  used on input line 428.
 (pdftex.def)             Requested size: 469.75502pt x 184.10101pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-<../outputs/series/paper-plots/barrier_vs_diversity.png, id=231, 422.378pt x 35
+[7 <../outputs/series/paper-plots/overconfidence_vs_width.png>]
+<../outputs/series/paper-plots/barrier_vs_diversity.png, id=241, 422.378pt x 35
 1.714pt>
 File: ../outputs/series/paper-plots/barrier_vs_diversity.png Graphic file (type
  png)
 <use ../outputs/series/paper-plots/barrier_vs_diversity.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/barrier_vs_diversity.png
-  used on input line 443.
+  used on input line 455.
 (pdftex.def)             Requested size: 281.85587pt x 234.69725pt.
 
-LaTeX Warning: `h' float specifier changed to `ht'.
-
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[7 <../outputs/series/paper-plots/overconfidence_vs_width.png>]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[8 <../outputs/series/paper-plots/ensemble_size_scaling.png>]
-
-LaTeX Warning: `h' float specifier changed to `ht'.
-
-[9 <../outputs/series/paper-plots/barrier_vs_diversity.png>] [10] [11]
-<../outputs/series/paper-plots/calibration_ece.png, id=273, 785.334pt x 315.579
+[8 <../outputs/series/paper-plots/ensemble_size_scaling.png>] [9 <../outputs/se
+ries/paper-plots/barrier_vs_diversity.png>] [10] [11] [12]
+<../outputs/series/paper-plots/calibration_ece.png, id=282, 785.334pt x 315.579
 pt>
 File: ../outputs/series/paper-plots/calibration_ece.png Graphic file (type png)
 
 <use ../outputs/series/paper-plots/calibration_ece.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/calibration_ece.png  use
-d on input line 805.
+d on input line 853.
 (pdftex.def)             Requested size: 469.75502pt x 188.77101pt.
- [12]
-<../outputs/series/paper-plots/reliability_diagrams.png, id=281, 1002.947pt x 4
+<../outputs/series/paper-plots/reliability_diagrams.png, id=284, 1002.947pt x 4
 27.5975pt>
 File: ../outputs/series/paper-plots/reliability_diagrams.png Graphic file (type
  png)
 <use ../outputs/series/paper-plots/reliability_diagrams.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/reliability_diagrams.png
-  used on input line 825.
+  used on input line 873.
 (pdftex.def)             Requested size: 469.75502pt x 200.27272pt.
-<../outputs/series/paper-plots/error_decomposition.png, id=283, 641.597pt x 285
+ [13]
+<../outputs/series/paper-plots/error_decomposition.png, id=295, 641.597pt x 285
 .065pt>
 File: ../outputs/series/paper-plots/error_decomposition.png Graphic file (type 
 png)
 <use ../outputs/series/paper-plots/error_decomposition.png>
 Package pdftex.def Info: ../outputs/series/paper-plots/error_decomposition.png 
- used on input line 845.
+ used on input line 893.
 (pdftex.def)             Requested size: 399.29463pt x 177.40833pt.
-
-[13 <../outputs/series/paper-plots/calibration_ece.png>] [14 <../outputs/series
-/paper-plots/reliability_diagrams.png> <../outputs/series/paper-plots/error_dec
-omposition.png>] (./scaling_ensembles_report.aux)
+ [14 <../outputs/series/paper-plots/calibration_ece.png>] [15 <../outputs/serie
+s/paper-plots/reliability_diagrams.png> <../outputs/series/paper-plots/error_de
+composition.png>] (./scaling_ensembles_report.aux)
 Package rerunfilecheck Info: File `scaling_ensembles_report.out' has not change
 d.
 (rerunfilecheck)             Checksum: 86FD430C0A099B83240DF7AC441D089D;3490.
  ) 
 Here is how much of TeX's memory you used:
- 14750 strings out of 478268
- 236407 string characters out of 5846346
- 578889 words of memory out of 5000000
- 32449 multiletter control sequences out of 15000+600000
- 491156 words of font info for 198 fonts, out of 8000000 for 9000
+ 14754 strings out of 478268
+ 236582 string characters out of 5846346
+ 575952 words of memory out of 5000000
+ 32455 multiletter control sequences out of 15000+600000
+ 490937 words of font info for 195 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 67i,11n,77p,1021b,445s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 67i,11n,77p,1021b,455s stack positions out of 10000i,1000n,20000p,200000b,200000s
 {/usr/local/texlive/2022/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 }</usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb>
 </usr/local/texlive/2022/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><
@@ -671,10 +653,10 @@ f-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2022/texmf-
 dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2022/te
 xmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2022/texm
 f-dist/fonts/type1/public/cm-super/sfrm0800.pfb>
-Output written on scaling_ensembles_report.pdf (14 pages, 1376620 bytes).
+Output written on scaling_ensembles_report.pdf (15 pages, 1380466 bytes).
 PDF statistics:
- 410 PDF objects out of 1000 (max. 8388607)
- 332 compressed objects within 4 object streams
- 87 named destinations out of 1000 (max. 500000)
+ 420 PDF objects out of 1000 (max. 8388607)
+ 341 compressed objects within 4 object streams
+ 91 named destinations out of 1000 (max. 500000)
  49865 words of extra memory for PDF output out of 51595 (max. 10000000)
 
