@@ -401,7 +401,8 @@ $w \in \{16, 64, 128\}$), as does ensemble gain ($p < 0.001$ throughout).
 \textbf{Per-class validation.}  The task-difficulty hypothesis predicts
 that, within CIFAR-10, harder classes should show higher pairwise
 disagreement.  We compute per-class error rate and disagreement for all
-pairs at all widths ($50 \times 10 = 500$ data points).  The Pearson
+pairs at all widths ($5\text{ widths} \times 10\text{ classes} = 50$
+aggregated data points).  The Pearson
 correlation between per-class error rate and per-class disagreement is
 $r = 0.982$ (Spearman $\rho = 0.978$, $p < 10^{-30}$).  Hard classes such
 as \emph{cat} (45\% error, 43\% disagreement) and \emph{dog} (36\%,
@@ -428,8 +429,9 @@ diversity.
 Figure~\ref{fig:acc_disagree} pools all pairwise data across datasets,
 architectures, and widths ($n = 384$ pairs).  The Pearson correlation
 between individual model accuracy and disagreement is $r = 0.923$
-($p < 10^{-160}$), confirming that accuracy is a universal predictor
-of diversity across all conditions we study.
+($p < 10^{-160}$); Spearman $\rho = 0.861$ ($p < 10^{-114}$) confirms
+the relationship is not driven by distributional assumptions.  Accuracy
+is a universal predictor of diversity across all conditions we study.
 
 \begin{figure}[h]
 \centering
