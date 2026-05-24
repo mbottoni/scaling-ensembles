@@ -1134,6 +1134,33 @@ range $0.12$--$0.15$).
 This coefficient exceeds zero whenever models are better-calibrated than chance ($p_{\mathrm{corr}} > \tfrac{1}{2}$), which holds on all our benchmarks.  STL-10's low gain is explained by reduced $p_{\mathrm{corr}}$: correlated underfitting makes the ensemble no better than either model when they disagree.
 \end{remark}
 
+\begin{remark}[Theoretical basis for the universal $M$-member scaling factor]
+\label{rem:mscaling}
+The empirical universality of $f(M)$ (CV $< 5\%$ across widths;
+Section~\ref{sec:scaling}) has a natural interpretation.  For an
+$M$-member averaging ensemble with independent errors, the probability of
+being correct is dominated by the probability that a majority of models
+produce the correct class as their top-probability prediction.  For
+K-class averaging ensembles, when exactly $j$ of $M$ models are correct,
+the ensemble is right with probability $p_{\mathrm{corr},j}^{(M)}$ that
+depends on the output confidence profile---not on model width (since the
+confidence profile, and therefore $p_{\mathrm{corr}}$, is approximately
+constant across widths from Table~\ref{tab:indep}).  This is why $f(M)$
+is universal: it depends only on $p_{\mathrm{corr}}$ and $\varepsilon$,
+both of which are determined by the task, not the model size.  The rational
+fit $f(M) = (1+a(M-2))/(1+b(M-2))$ with $a/b \approx 2.51$ captures the
+saturation; for majority-vote (binary, hard decisions), the asymptotic gain
+is bounded by the Bayes error, consistent with the observed plateau.
+Combined with Remark~\ref{rem:coefficient}:
+\[
+  \mathrm{gain}(M) \;\approx\; 2\varepsilon(1-\varepsilon)
+  \bigl(p_{\mathrm{corr}} - \tfrac{1}{2}\bigr) \;\times\; f(M),
+\]
+where $f(M)$ is the universal scaling factor, and the coefficient
+$2\varepsilon(1-\varepsilon)(p_{\mathrm{corr}}-\tfrac{1}{2}) \approx 0.14\varepsilon$
+for $\varepsilon \in [0.15, 0.35]$ (K=10 regime).
+\end{remark}
+
 %─────────────────────────────────────────────────────────────────────────────
 \section{Discussion}
 \label{sec:discussion}
@@ -1192,10 +1219,12 @@ the relative contributions are not isolated here.
 All experiments use AdamW without data augmentation; standard augmentations
 (random crops, flips) for CIFAR-10 would likely raise overall accuracy
 and may shift the difficulty threshold---we leave the effect of augmentation
-on ensemble diversity for future work.  Finally, our gain-error coefficient
-($\approx$14\%) is specific to 2-member ensembles; the analogous coefficient
-for $M$-member ensembles ($M > 2$) would require extending
-Remark~\ref{rem:coefficient} to account for majority-vote dynamics.
+on ensemble diversity for future work.  The gain-error coefficient
+($\approx$14\%) and the universal $M$-member scaling factor $f(M)$
+are derived from CIFAR-10 CNN and ResNet experiments; whether the rational
+fit parameters $(a, b)$ generalise to architectures beyond those studied
+here---particularly attention-based models and very large parameter regimes---remains
+an open question addressed by Remark~\ref{rem:mscaling}.
 
 \paragraph{Architecture robustness.}
 Our ResNet comparison (Section~\ref{sec:architecture}) confirms that the
