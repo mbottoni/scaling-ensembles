@@ -417,10 +417,13 @@ difficulty—not dataset size or image resolution—governs the result.
 
 \textbf{Cross-dataset correlation.}  Averaging over all widths and
 seeds per dataset, the Pearson correlation between mean per-dataset
-error rate and mean pairwise disagreement across five benchmarks is
+error rate and mean pairwise disagreement across five $K=10$ benchmarks is
 $r = 0.94$ ($p = 0.016$; Spearman $\rho = 0.90$, $p = 0.037$).  The ranking from
 easiest to hardest---MNIST~$\to$ FashionMNIST~$\to$ SVHN~$\to$ CIFAR-10
-$\approx$ STL-10---matches the ranking by disagreement exactly.
+$\approx$ STL-10---matches the ranking by disagreement exactly.  Adding
+CIFAR-100 (preliminary; 40--43\% accuracy, 54--62\% disagreement) extends
+this to $r = 0.972$ ($p = 0.001$, $n = 6$ datasets), confirming the
+relationship holds across radically different class counts and difficulty levels.
 
 \textbf{Statistical significance.}  Bootstrap permutation tests (2000
 samples) confirm that CIFAR-10 disagreement significantly exceeds
