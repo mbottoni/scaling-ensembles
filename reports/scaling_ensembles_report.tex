@@ -536,9 +536,14 @@ the theoretical interpretation.
 achieves only 1.2--2.0\,pp gain (predicted: 5.1--6.1\,pp).  STL-10 has
 only 5,000 training images ($10\times$ fewer than CIFAR-10), so its high
 error is driven by data scarcity and architectural underfitting, not
-intrinsic class ambiguity.  Data-scarce models fail on the \emph{same}
-hard examples in correlated ways, violating the error-independence assumption
-of Proposition~\ref{prop:multiplicity}.
+intrinsic class ambiguity.  The mechanistic signature is a high
+$p_{\mathrm{same}}$ rate: 21.2\% of examples have both models predict the
+same wrong class (vs.\ 8.9\% for CIFAR-10 CNN), which drives $p_{\mathrm{corr}}$ down
+to 0.566 (vs.\ 0.635 for CIFAR-10).  Even though raw disagreement is
+similar ($26.7\%$ vs $30\%$), gain $= \mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$
+is suppressed: $0.267 \times 0.066 = 1.8$\,pp vs.\ $0.300 \times 0.135 = 4.0$\,pp.
+Table~\ref{tab:pcorr} and Figure~\ref{fig:pcorr_psame} quantify this mechanism
+across all datasets.
 
 \emph{CIFAR-100 ($K\!=\!100$ classes):}  Our preliminary CIFAR-100
 results show 54--62\% disagreement at 40--43\% accuracy, but only
