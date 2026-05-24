@@ -35,7 +35,7 @@ Deep ensembles improve accuracy and calibration by averaging predictions of
 independently trained neural networks.  A common concern is that
 overparameterized networks converge to functionally similar solutions,
 undermining ensemble diversity as capacity grows.  We investigate this
-systematically across six benchmarks (MNIST to CIFAR-10) spanning a full
+systematically across seven benchmarks (MNIST to CIFAR-100) spanning a full
 difficulty range, using SmallCNN, MLP, and ResNetCIFAR models at widths
 covering 27K to 9.6M parameters.  Our main finding is that \emph{pairwise
 disagreement, ensemble accuracy gain, and calibration benefit are governed
@@ -314,7 +314,7 @@ for MNIST MLP.  Ten random seeds are used per width for CIFAR-10 and
 MNIST MLP; three to five seeds are used for other datasets.
 
 \paragraph{Datasets.}
-Table~\ref{tab:datasets} summarizes the six benchmarks.  We order them
+Table~\ref{tab:datasets} summarizes all seven benchmarks.  We order them
 roughly by difficulty (measured by the best single-model accuracy achieved
 in our sweep).  We include two corrupted-evaluation variants of CIFAR-10:
 Gaussian noise and Gaussian blur applied to the test set at inference
@@ -328,15 +328,19 @@ time, with models trained on clean data only.
 \toprule
 Dataset & Type & Classes & Train size & Best model acc.\\
 \midrule
-MNIST          & grayscale 28$\times$28 & 10 & 60\,000  & 98\% (MLP)\\
-FashionMNIST   & grayscale 28$\times$28 & 10 & 60\,000  & 92\%\\
-SVHN           & RGB 32$\times$32       & 10 & 73\,257  & 90\%\\
-CIFAR-10       & RGB 32$\times$32       & 10 & 50\,000  & 76\%\\
-CIFAR-10-C     & corrupted RGB 32$\times$32 & 10 & --   & 33--62\%\\
-STL-10         & RGB 96$\times$96       & 10 & 5\,000   & 64\%\\
+MNIST          & grayscale 28$\times$28 & 10  & 60\,000  & 98\% (MLP)\\
+FashionMNIST   & grayscale 28$\times$28 & 10  & 60\,000  & 92\%\\
+SVHN           & RGB 32$\times$32       & 10  & 73\,257  & 90\%\\
+CIFAR-10       & RGB 32$\times$32       & 10  & 50\,000  & 76\% (CNN), 84\% (ResNet)\\
+CIFAR-10-C     & corrupted RGB 32$\times$32 & 10  & --   & 33--62\%\\
+STL-10         & RGB 96$\times$96       & 10  & 5\,000   & 64\%\\
+CIFAR-100$^\dagger$     & RGB 32$\times$32       & 100 & 50\,000  & 43\%\\
 \bottomrule
 \end{tabular}
-\caption{Benchmark summary ordered by task difficulty.}
+\caption{Benchmark summary ordered by task difficulty.
+$^\dagger$CIFAR-100 training in progress; widths $w \in \{16,32,64\}$ complete
+(5 seeds each), $w=128$ in progress.  All reported CIFAR-100 statistics are
+preliminary.}
 \label{tab:datasets}
 \end{table}
 
@@ -1193,9 +1197,9 @@ where overconfident predictions are harmful.
 \label{sec:conclusion}
 
 We have shown systematically that functional diversity in deep ensembles is
-governed by task difficulty rather than by model capacity.  Across six
-benchmarks spanning MNIST (2.3\% pairwise disagreement) to CIFAR-10
-(25--31\% disagreement), two model families (SmallCNN and ResNetCIFAR),
+governed by task difficulty rather than by model capacity.  Across seven
+benchmarks spanning MNIST (2.3\% pairwise disagreement) to CIFAR-100
+(54--62\% disagreement, preliminary), two model families (SmallCNN and ResNetCIFAR),
 and a $350\times$ parameter range (27K to 9.6M), pairwise prediction disagreement,
 ensemble accuracy gain, and calibration benefit are consistently large on
 hard tasks and consistently small on easy tasks, irrespective of width.
