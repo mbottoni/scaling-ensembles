@@ -843,6 +843,21 @@ the calibration failure and the detection failure simultaneously.
 Figure~\ref{fig:corruption_auroc} shows AUROC gain vs.\ parameter count
 for both corruption types.
 
+\textbf{Gain decomposition under corruption.}  The $p_{\rm same}$/$p_{\rm corr}$
+framework (Figure~\ref{fig:pcorr_psame}) explains the different accuracy
+gains precisely.  Under \emph{blur}, $p_{\rm same} = 14.3\%$ and
+$p_{\rm corr} = 0.625$---similar to clean CIFAR-10---so accuracy gain
+$\approx 5$\,pp.  Under \emph{Gaussian noise}, $p_{\rm same} = 27.4\%$
+and $p_{\rm corr} = 0.527$ (near chance), so accuracy gain
+$\approx 1.4$\,pp: models make \emph{different} wrong predictions
+on each noisy image (high disagreement, high $p_{\rm same}$), but the
+ensemble averages to an equally wrong prediction.  The OOD detection
+gain, however, is large for both corruptions: ensemble disagreement raises
+predictive entropy regardless of which direction models disagree, providing
+a reliable corruption signal independent of $p_{\rm corr}$.  This dissociation---
+high $p_{\rm same}$ suppresses \emph{accuracy} gain but not \emph{uncertainty}
+gain---generalises the framework to distribution-shift settings.
+
 \begin{figure}[h]
 \centering
 \includegraphics[width=\linewidth]{../outputs/series/paper-plots/corruption_auroc.png}
