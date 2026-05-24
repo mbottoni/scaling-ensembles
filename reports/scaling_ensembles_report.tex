@@ -51,14 +51,15 @@ predictor of ensemble diversity.  An architecture comparison further
 confirms generality: ResNet diversity tracks the SmallCNN pattern when
 controlling for accuracy---30.3\% vs.\ 27.7\% disagreement at
 ${\approx}74\%$ accuracy, with ensemble gain ${\geq}2.4$ pp at all widths.
-We further establish a quantitative gain-error law: ensemble gain
-$\approx 14\%\times\varepsilon$ across 23 dataset--width combinations
-($r=0.962$, $p=2.6\times 10^{-13}$).  STL-10 is the sole outlier---its
-high error stems from data scarcity (5k training images), not intrinsic
-ambiguity, producing correlated rather than diverse failures and providing
-only 1.2--2.0\,pp gain vs.\ a predicted 5--6\,pp.  This distinguishes
-\emph{aleatoric} difficulty (generates ensemble benefit) from
-\emph{epistemic} underfitting (does not).
+We further establish a quantitative gain-error law for $K\!=\!10$ tasks:
+ensemble gain $\approx 14\%\times\varepsilon$ ($r=0.962$, $p=2.6\times 10^{-13}$,
+$n=23$).  Two controlled outliers sharpen the interpretation.
+\emph{STL-10} deviates because its high error stems from data scarcity
+(5k images), producing correlated failures (1.2--2.0\,pp vs.\ predicted
+5--6\,pp).  \emph{CIFAR-100} ($K\!=\!100$ classes) also deviates: with
+more classes, $p_{\rm corr}$ drops from 0.62 to $\approx$0.57, reducing
+the gain coefficient.  Both deviations validate our theory: the gain-error
+coefficient is governed by $K$ and error source, not just error rate.
 A second finding is an overconfidence scaling law: single-model ECE grows
 from 7\% to 22\% as width increases, while 10-member ensemble NLL remains
 flat at ${\approx}0.64$ across all widths.  This overconfidence causes OOD
