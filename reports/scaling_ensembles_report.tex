@@ -53,7 +53,12 @@ controlling for accuracy---30.3\% vs.\ 27.7\% disagreement at
 ${\approx}74\%$ accuracy, with ensemble gain ${\geq}2.4$ pp at all widths.
 We further establish a quantitative gain-error law for $K\!=\!10$ tasks:
 ensemble gain $\approx 14\%\times\varepsilon$ ($r=0.962$, $p=2.6\times 10^{-13}$,
-$n=23$).  Two controlled outliers sharpen the interpretation.
+$n=23$).  We additionally discover a \textbf{universal $M$-member scaling law}:
+the normalized gain ratio $f(M)=\mathrm{gain}(M)/\mathrm{gain}(2)$ collapses
+across all model widths (CV $<5\%$) and follows the rational law
+$f(M)=(1+0.898(M-2))/(1+0.357(M-2))$ (RMSE $<0.007$), with asymptote
+$f(\infty)\approx 2.51$.  Combined: $\mathrm{gain}(M) \approx 0.14\varepsilon\times f(M)$.
+Two controlled outliers sharpen the interpretation.
 \emph{STL-10} deviates because its high error stems from data scarcity
 (5k images), producing correlated failures (1.2--2.0\,pp vs.\ predicted
 5--6\,pp).  \emph{CIFAR-100} ($K\!=\!100$ classes) also deviates: with
