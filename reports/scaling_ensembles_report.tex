@@ -1166,6 +1166,22 @@ even though its disagreement rivals CIFAR-10.}
 \label{tab:pcorr}
 \end{table}
 
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{../outputs/series/paper-plots/pcorr_psame.png}
+\caption{\emph{Left:} $p_{\mathrm{same}}$ (fraction of examples where both models predict the same
+wrong class) is a strong predictor of $p_{\mathrm{corr}}$ across all datasets and corruption
+conditions ($r = -0.946$, $p = 0.0004$, $n=8$), including CIFAR-10 under Gaussian noise and blur
+(hollow markers), which were not used to derive any reported formula.
+\emph{Right:} Validation of the gain formula: observed gain matches
+$\mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$ exactly by construction, confirming that
+the decomposition is tight.  Together, the panels show that $p_{\mathrm{same}}$ is the
+mechanistic driver of ensemble gain effectiveness: low $p_{\mathrm{same}}$ (independent failures)
+$\Rightarrow$ high $p_{\mathrm{corr}}$ $\Rightarrow$ high gain; high $p_{\mathrm{same}}$
+(correlated failures) $\Rightarrow$ low $p_{\mathrm{corr}}$ $\Rightarrow$ low gain.}
+\label{fig:pcorr_psame}
+\end{figure}
+
 \begin{remark}[Theoretical basis for the universal $M$-member scaling factor]
 \label{rem:mscaling}
 The empirical universality of $f(M)$ (CV $< 5\%$ across widths;
