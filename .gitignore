@@ -16,3 +16,4 @@ outputs/
 *.out
 *.fls
 *.fdb*
+*.log
