@@ -58,13 +58,9 @@ the normalized gain ratio $f(M)=\mathrm{gain}(M)/\mathrm{gain}(2)$ collapses
 across all model widths (CV $<5\%$) and follows the rational law
 $f(M)=(1+0.898(M-2))/(1+0.357(M-2))$ (RMSE $<0.007$), with asymptote
 $f(\infty)\approx 2.51$.  Combined: $\mathrm{gain}(M) \approx 0.14\varepsilon\times f(M)$.
+We further identify $p_{\rm same}$ (fraction of examples where both models predict the same wrong class) as a universal predictor of ensemble gain effectiveness: $p_{\rm same}$ predicts $p_{\rm corr} = P(\text{ens right}\mid\text{disagree})$ with $r=-0.946$ ($p=0.0004$, $n=8$) across clean and corrupted conditions.
 Two controlled outliers sharpen the interpretation.
-\emph{STL-10} deviates because its high error stems from data scarcity
-(5k images), producing correlated failures (1.2--2.0\,pp vs.\ predicted
-5--6\,pp).  \emph{CIFAR-100} ($K\!=\!100$ classes) also deviates: with
-more classes, $p_{\rm corr}$ drops from 0.62 to $\approx$0.57, reducing
-the gain coefficient.  Both deviations validate our theory: the gain-error
-coefficient is governed by $K$ and error source, not just error rate.
+\emph{STL-10} deviates because its high error stems from data scarcity (5k images): $p_{\rm same}=21.2\%$ (vs.\ 8.9\% for CIFAR-10) suppresses $p_{\rm corr}$ to 0.566, halving the gain despite similar disagreement rates.  \emph{CIFAR-100} ($K\!=\!100$ classes) also deviates: with more classes, $p_{\rm corr}$ drops from 0.62 to $\approx$0.57, reducing the gain coefficient.  Both deviations validate our theory: the gain-error coefficient is governed by $K$ and error source, not just error rate.
 A second finding is an overconfidence scaling law: single-model ECE grows
 from 7\% to 22\% as width increases, while 10-member ensemble NLL remains
 flat at ${\approx}0.64$ across all widths.  This overconfidence causes OOD
