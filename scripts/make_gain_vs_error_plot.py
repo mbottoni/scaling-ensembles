@@ -110,19 +110,23 @@ def main() -> None:
     if cifar100_path.exists():
         all_points.extend(load_summary(cifar100_path, "CIFAR100"))
 
-    # Regression: exclude STL-10 (data-scarce outlier)
-    regression_points = [p for p in all_points if p[0] != "STL10"]
+    # Regression: 10-class datasets only (exclude STL-10 and CIFAR-100)
+    # STL-10: correlated failures from data scarcity (5k images)
+    # CIFAR-100: K=100 classes reduces p_corr from 0.62 to ~0.57 (different coefficient)
+    ten_class_names = {"MNIST", "FashionMNIST", "SVHN", "CIFAR10-CNN", "CIFAR10-ResNet"}
+    regression_points = [p for p in all_points if p[0] in ten_class_names]
     errors_reg = np.array([p[2] for p in regression_points])
     gains_reg = np.array([p[3] for p in regression_points])
     r, p_val = stats.pearsonr(errors_reg, gains_reg)
     slope, intercept, _, _, _ = stats.linregress(errors_reg, gains_reg)
     n_reg = len(regression_points)
-    LOGGER.info("Regression (n=%d, excl. STL-10): r=%.3f p=%.2e", n_reg, r, p_val)
+    LOGGER.info("Regression (n=%d, 10-class only): r=%.3f p=%.2e", n_reg, r, p_val)
     LOGGER.info("gain ≈ %.2f × error + %.3f", slope, intercept)
 
     fig, ax = plt.subplots(figsize=(7, 5.5))
 
     # Plot by dataset group
+    outlier_names = {"STL10", "CIFAR100"}
     plotted = set()
     for name, params, err, gain in all_points:
         style = DATASET_STYLES.get(name, {"color": "gray", "marker": ".", "size": 40, "label": name})
@@ -132,16 +136,16 @@ def main() -> None:
             c=style["color"], marker=style["marker"],
             s=style["size"], alpha=0.85, label=label,
             edgecolors="white", linewidths=0.5,
-            zorder=3 if name == "STL10" else 2,
+            zorder=3 if name in outlier_names else 2,
         )
         plotted.add(name)
 
-    # Draw regression line
+    # Draw regression line (10-class only)
     x_line = np.linspace(0, max(errors_reg) * 1.05, 80)
     y_line = slope * x_line + intercept
     ax.plot(
         x_line * 100, y_line, "k--", alpha=0.55, linewidth=1.5,
-        label=f"OLS (excl. STL-10, n={n_reg}): $r={r:.3f}$",
+        label=f"OLS (10-class, n={n_reg}): $r={r:.3f}$",
     )
 
     # Annotate STL-10 outlier
@@ -149,21 +153,34 @@ def main() -> None:
     if stl10_pts:
         avg_err = np.mean([p[0] for p in stl10_pts]) * 100
         avg_gain = np.mean([p[1] for p in stl10_pts])
-        predicted = slope * avg_err / 100 + intercept
         ax.annotate(
-            "STL-10: high error\nfrom data scarcity\n(5k train images)",
+            "STL-10: high error\nfrom data scarcity\n(5k train; correlated fails)",
             xy=(avg_err, avg_gain),
-            xytext=(avg_err - 12, avg_gain + 1.2),
-            fontsize=8,
+            xytext=(avg_err - 14, avg_gain + 1.0),
+            fontsize=7.5,
             arrowprops=dict(arrowstyle="->", color="#8c564b", lw=1.0),
             color="#8c564b",
+        )
+
+    # Annotate CIFAR-100 outlier (if present)
+    c100_pts = [(p[2], p[3]) for p in all_points if p[0] == "CIFAR100"]
+    if c100_pts:
+        avg_err = np.mean([p[0] for p in c100_pts]) * 100
+        avg_gain = np.mean([p[1] for p in c100_pts])
+        ax.annotate(
+            "CIFAR-100: $K$=100 classes\nreduces $p_{\\rm corr}$: 0.62→0.57",
+            xy=(avg_err, avg_gain),
+            xytext=(avg_err + 2, avg_gain + 0.8),
+            fontsize=7.5,
+            arrowprops=dict(arrowstyle="->", color="#e377c2", lw=1.0),
+            color="#e377c2",
         )
 
     ax.set_xlabel("Individual model error rate (%)")
     ax.set_ylabel("Ensemble accuracy gain (pp)")
     ax.set_title(
-        "Ensemble gain scales with intrinsic task difficulty\n"
-        r"(gain $\approx$ 14\% $\times$ error rate; $r=0.962$, excl. data-scarce STL-10)"
+        "Ensemble gain scales with intrinsic task difficulty (10-class regime)\n"
+        r"(gain $\approx$ 14\% $\times$ error rate, $r=0.962$; outliers annotated)"
     )
     ax.legend(loc="upper left", fontsize=8, framealpha=0.9)
     ax.grid(True, alpha=0.3)
