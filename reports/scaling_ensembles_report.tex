@@ -34,44 +34,44 @@
 Deep ensembles improve accuracy and calibration by averaging predictions of
 independently trained neural networks.  A common concern is that
 overparameterized networks converge to functionally similar solutions,
-undermining ensemble diversity as capacity grows.  We investigate this
-systematically across seven benchmarks (MNIST to CIFAR-100) spanning a full
-difficulty range, using SmallCNN, MLP, and ResNetCIFAR models at widths
-covering 27K to 9.6M parameters.  Our main finding is that \emph{pairwise
-disagreement, ensemble accuracy gain, and calibration benefit are governed
-by task difficulty, not parameter count}:  MNIST shows only 2.3--3.3\%
-disagreement and $<0.6$\,pp gain at all widths; CIFAR-10 sustains
-$25$--$31\%$ disagreement and $3$--$4$\,pp gain across a $250\times$
-parameter range.  Per-class error rate predicts per-class disagreement
-within CIFAR-10 with Pearson $r=0.982$ ($p<10^{-30}$), ruling out
-dataset-size or resolution confounds.  Pooling all 414 data points (pairwise model comparisons and per-dataset aggregates) across 6 datasets, 2 architectures,
-and a 350$\times$ parameter range, Pearson $r = 0.935$ ($p < 10^{-186}$)
-between accuracy and disagreement confirms that accuracy is a universal
-predictor of ensemble diversity.  An architecture comparison further
-confirms generality: ResNet diversity tracks the SmallCNN pattern when
-controlling for accuracy---30.3\% vs.\ 27.7\% disagreement at
-${\approx}74\%$ accuracy, with ensemble gain ${\geq}2.4$ pp at all widths.
-We further establish a quantitative gain-error law for $K\!=\!10$ tasks:
-ensemble gain $\approx 14\%\times\varepsilon$ ($r=0.962$, $p=2.6\times 10^{-13}$,
-$n=23$).  We additionally discover a \textbf{universal $M$-member scaling law}:
-the normalized gain ratio $f(M)=\mathrm{gain}(M)/\mathrm{gain}(2)$ collapses
-across all model widths (CV $<5\%$) and follows the rational law
-$f(M)=(1+0.898(M-2))/(1+0.357(M-2))$ (RMSE $<0.007$), with asymptote
-$f(\infty)\approx 2.51$.  Combined: $\mathrm{gain}(M) \approx 0.14\varepsilon\times f(M)$.
-We further identify $p_{\rm same}$ (fraction of examples where both models predict the same wrong class) as a universal predictor of ensemble gain effectiveness: $p_{\rm same}$ predicts $p_{\rm corr} = P(\text{ens right}\mid\text{disagree})$ with $r=-0.946$ ($p=0.0004$, $n=8$) across clean and corrupted conditions.
-Two controlled outliers sharpen the interpretation.
-\emph{STL-10} deviates because its high error stems from data scarcity (5k images): $p_{\rm same}=21.2\%$ (vs.\ 8.9\% for CIFAR-10) suppresses $p_{\rm corr}$ to 0.566, halving the gain despite similar disagreement rates.  \emph{CIFAR-100} ($K\!=\!100$ classes) also deviates: with more classes, $p_{\rm corr}$ drops from 0.62 to $\approx$0.57, reducing the gain coefficient.  Both deviations validate our theory: the gain-error coefficient is governed by $K$ and error source, not just error rate.
-A second finding is an overconfidence scaling law: single-model ECE grows
-from 7\% to 22\% as width increases, while 10-member ensemble NLL remains
-flat at ${\approx}0.64$ across all widths.  This overconfidence causes OOD
-detection failure: at width 256, a single model's AUROC for detecting
-Gaussian-corrupted inputs collapses to 0.531 (near chance), while a
-5-member ensemble achieves 0.729.  We further show that two narrow models
-outperform one wide model with twice the parameters (+1.4--3.4\,pp),
-and identify a diversity--barrier dissociation: loss-landscape barriers
-collapse with width, yet functional diversity is preserved.  These results
-imply that deep ensembles remain practically valuable for large
-overparameterized models on genuinely hard tasks.
+undermining ensemble diversity at scale.  We investigate this systematically
+across seven benchmarks (MNIST to CIFAR-100) and a $350\times$ parameter
+range (27K--9.6M), using SmallCNN, MLP, and ResNet models.
+
+Our main finding is that \emph{pairwise disagreement, ensemble accuracy
+gain, and calibration benefit are governed by task difficulty, not parameter
+count}: MNIST shows only $2.3$--$3.3\%$ disagreement and $<0.6$\,pp gain
+at all widths; CIFAR-10 sustains $25$--$31\%$ disagreement and
+$3$--$4$\,pp gain across a $250\times$ parameter range.  Pooling
+414 pairwise comparisons across six datasets and two architectures,
+Pearson $r = 0.935$ ($p < 10^{-186}$) confirms that accuracy is a
+universal predictor of ensemble diversity; the partial correlation
+controlling for parameter count is $r = 0.928$, confirming that parameter
+count is not the driver.
+
+We establish three quantitative laws: (i)~a \textbf{gain-error law}
+for $K\!=\!10$ tasks, $\text{gain} \approx 14\%\times\varepsilon$
+($r=0.962$, $p=2.6\times 10^{-13}$, $n=23$); (ii)~a \textbf{universal
+$M$-member scaling law}, $f(M)=\mathrm{gain}(M)/\mathrm{gain}(2)=
+(1+0.898(M-2))/(1+0.357(M-2))$ (CV $<5\%$ across widths, RMSE $<0.007$),
+enabling $M$-member gain prediction from a 2-member pilot, with combined
+formula $\mathrm{gain}(M)\approx 0.14\varepsilon\times f(M)$; and
+(iii)~a \textbf{$p_{\rm same}$--$p_{\rm corr}$ law}: the fraction of
+examples where both models predict the same wrong class ($p_{\rm same}$)
+predicts $p_{\rm corr}=P(\text{ens right}\mid\text{disagree})$ with
+$r=-0.946$ ($p=0.0004$, $n=8$) across clean and corrupted conditions.
+Two controlled outliers---STL-10 (data scarcity; $p_{\rm same}=21.2\%$;
+$p_{\rm corr}=0.566$) and preliminary CIFAR-100 ($K\!=\!100$ classes;
+reduced gain coefficient)---deviate below the gain-error line for distinct
+mechanistic reasons, jointly validating the framework.
+
+A secondary finding is an \textbf{overconfidence scaling law}: single-model
+ECE grows from $7\%$ to $22\%$ as width increases, while 10-member ensemble
+NLL is flat at ${\approx}0.64$ across all widths.  This overconfidence
+directly causes OOD detection failure: at width~256, a single model's
+AUROC for Gaussian-corrupted inputs collapses to $0.531$ while a 5-member
+ensemble achieves $0.729$.  These results imply that deep ensembles remain
+practically valuable for large overparameterized models on genuinely hard tasks.
 \end{abstract}
 
 %─────────────────────────────────────────────────────────────────────────────
@@ -157,7 +157,7 @@ task difficulty?
         We provide multi-scale validation: (a)~per-class error rate
         predicts per-class disagreement within CIFAR-10 with $r = 0.982$
         ($p < 10^{-30}$); (b)~pooling all 414 data points (pairwise comparisons and aggregates)
-        across 6 datasets and 2 architectures, Pearson $r = 0.935$ ($p < 10^{-186}$),
+        across six datasets and two architectures, Pearson $r = 0.935$ ($p < 10^{-186}$),
         with partial $r = 0.928$ controlling for parameter count;
         (c)~cross-architecture (SmallCNN + ResNet) $r = 0.954$.
 
@@ -541,7 +541,7 @@ intrinsic class ambiguity.  The mechanistic signature is a high
 $p_{\mathrm{same}}$ rate: 21.2\% of examples have both models predict the
 same wrong class (vs.\ 8.9\% for CIFAR-10 CNN), which drives $p_{\mathrm{corr}}$ down
 to 0.566 (vs.\ 0.635 for CIFAR-10).  Even though raw disagreement is
-similar ($26.7\%$ vs $30\%$), gain $= \mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$
+similar ($26.7\%$ vs.\ ${\approx}30\%$), gain $= \mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$
 is suppressed: $0.267 \times 0.066 = 1.8$\,pp vs.\ $0.300 \times 0.135 = 4.0$\,pp.
 Table~\ref{tab:pcorr} and Figure~\ref{fig:pcorr_psame} quantify this mechanism
 across all datasets.
@@ -616,7 +616,7 @@ indicating that wider models commit more strongly to specific error
 patterns.  The overconfidence is further confirmed by NLL: single-model
 NLL on CIFAR-10 grows from $0.88$ at width~16 to $2.31$ at width~256
 (Table~\ref{tab:nll}).  In contrast, the 2-member ensemble NLL grows
-from $0.75$ to $1.33$---a $7\times$ smaller increase.  Strikingly, the
+from $0.75$ to $1.33$---a $2.5\times$ smaller absolute increase.  Strikingly, the
 10-member ensemble NLL is essentially flat: $0.64$ at width~16 and
 $0.65$ at width~256, confirming that functional diversity fully compensates
 for single-model overconfidence at every capacity level.
