@@ -1321,11 +1321,16 @@ hypothesis, not despite it.  The governing quantity is the model's proximity
 to the task's Bayes error, not the architectural family.
 
 \paragraph{Future directions.}
-Key open directions include: extending to larger-scale architectures
-(ViT, ResNet-50) and harder datasets (ImageNet); studying mixed-architecture
-ensembles; theoretical characterization of the diversity--barrier
-dissociation; and connecting to ensemble distillation and Bayesian deep
-learning.
+Key open directions include: (i)~extending to larger-scale architectures
+(ViT, ResNet-50) and harder datasets (ImageNet) to test whether the gain-error
+coefficient and $f(M)$ parameters are universal or architecture-specific;
+(ii)~characterizing $p_{\rm same}$ as a function of training data size and
+label noise, to understand whether the gain-error law can be made data-efficient;
+(iii)~studying mixed-architecture ensembles, where models from different
+families may have lower $p_{\rm same}$ and higher $p_{\rm corr}$;
+(iv)~theoretical characterization of the diversity--barrier dissociation;
+and (v)~connecting $p_{\rm same}$ to ensemble distillation objectives
+(diverse ensemble members should minimize $p_{\rm same}$ jointly).
 
 \paragraph{Broader impact.}
 This work advances understanding of when deep ensembles provide practical
