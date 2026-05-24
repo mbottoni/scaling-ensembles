@@ -497,10 +497,10 @@ quantity practitioners care about.  Figure~\ref{fig:gain_vs_error} plots
 two-member ensemble gain against individual model error rate across all
 datasets and widths studied.
 
-\textbf{A near-linear relationship ($r = 0.962$).}  Excluding STL-10 (for
-reasons explained below), ensemble gain obeys a remarkably tight linear law
-across 23 (dataset, width) combinations spanning MNIST, FashionMNIST, SVHN,
-CIFAR-10, and ResNet CIFAR-10:
+\textbf{A near-linear relationship ($r = 0.962$) within the 10-class regime.}
+For all 10-class datasets (MNIST, FashionMNIST, SVHN, CIFAR-10 CNN,
+CIFAR-10 ResNet), ensemble gain obeys a remarkably tight linear law across
+23 (dataset, width) combinations:
 \[
   \text{gain} \;\approx\; 0.14 \times \varepsilon \;+\; 0.08\;\text{pp}
   \quad (r = 0.962,\; p = 2.6 \times 10^{-13}).
@@ -510,34 +510,45 @@ ${\approx}2.9$\,pp; at 8\% error (FashionMNIST), ${\approx}1.2$\,pp.
 This provides a practical estimator for expected ensemble benefit given
 a task's single-model error rate.
 
-\textbf{STL-10 as a natural negative control.}  STL-10 is the only
-clear outlier: despite error rates of 36--43\%, it achieves only
-1.2--2.0\,pp gain---far below the predicted 5.1--6.1\,pp.  We attribute
-this to the \emph{source} of error.  STL-10 has only 5,000 training
-images (10$\times$ fewer than CIFAR-10), so its high error rate is driven
-largely by data scarcity and architectural underfitting, not by intrinsic
-class ambiguity.  Data-scarce models fail on the \emph{same} hard examples
-in correlated ways, violating the error-independence assumption of
-Proposition~\ref{prop:multiplicity}.  When the two models disagree on
-STL-10, neither prediction is reliably better than the other, so the
-ensemble gains little.
+\textbf{Two controlled negative controls.}  Two datasets deviate from
+the 10-class regression line, for \emph{different} reasons, validating
+the theoretical interpretation.
+
+\emph{STL-10 (data scarcity):}  Despite error rates of 36--43\%, STL-10
+achieves only 1.2--2.0\,pp gain (predicted: 5.1--6.1\,pp).  STL-10 has
+only 5,000 training images ($10\times$ fewer than CIFAR-10), so its high
+error is driven by data scarcity and architectural underfitting, not
+intrinsic class ambiguity.  Data-scarce models fail on the \emph{same}
+hard examples in correlated ways, violating the error-independence assumption
+of Proposition~\ref{prop:multiplicity}.
+
+\emph{CIFAR-100 ($K\!=\!100$ classes):}  Our preliminary CIFAR-100
+results show 54--62\% disagreement at 40--43\% accuracy, but only
+3.8--4.6\,pp gain---below the 10-class predicted 8.4\,pp.  The deviation
+arises from the number of classes: with $K=100$, a wrong model's
+probability mass is spread over 99 alternatives, reducing $p_{\mathrm{corr}}$
+from ${\approx}0.62$ (10-class) to ${\approx}0.57$.  Unlike STL-10, this
+is not a failure of diversity---disagreement is indeed high (${\approx}58\%$)
+and errors are aleatoric---but the ensemble coefficient is lower because
+$K=100$ makes it harder to identify the correct class from averaged predictions.
+The gain-error law thus holds \emph{within} fixed-$K$ regimes, with the
+coefficient depending on $K$.
 
 This insight reframes the difficulty hypothesis more precisely:
 \emph{ensemble gain is governed by aleatoric difficulty}
-(irreducible ambiguity in the labeling function), not by total
-model error.  Aleatoric difficulty produces diverse errors;
-epistemic underfitting from data scarcity produces correlated errors.
-STL-10 acts as a controlled validation of this distinction.
+(irreducible ambiguity), not by total model error.  The 14\% coefficient
+applies to $K=10$ tasks; practitioners should recalibrate for $K \gg 10$.
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.82\linewidth]{../outputs/series/paper-plots/gain_vs_error.png}
 \caption{Two-member ensemble gain vs.\ individual model error rate, one point per
-(dataset, width) combination.  Excluding STL-10 (data-scarce), Pearson $r = 0.962$
-($p = 2.6 \times 10^{-13}$, $n = 23$) and gain $\approx 14\%\times\varepsilon$.
-STL-10 lies far below the regression line: its high error derives from data
-scarcity (5k training images), producing correlated failures rather than the
-diverse aleatoric errors that drive ensemble gain.}
+(dataset, width) combination.  The 10-class regression (dashed, $n=23$, $r=0.962$,
+$p=2.6\!\times\!10^{-13}$) gives gain $\approx 14\%\times\varepsilon$.
+\emph{STL-10} (brown $\times$) lies far below the line: data scarcity (5k images)
+causes correlated failures, not diverse aleatoric errors.
+\emph{CIFAR-100} (pink $\hexagon$, preliminary) also lies below: with $K=100$ classes,
+$p_{\mathrm{corr}}$ drops from 0.62 to $\approx$0.57, reducing the gain coefficient.}
 \label{fig:gain_vs_error}
 \end{figure}
 
