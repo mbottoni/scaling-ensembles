@@ -1136,8 +1136,35 @@ effective coefficient $\approx 0.14$ for $\varepsilon \in [0.15,0.35]$---consist
 $\delta_{\mathrm{indep}} \times 2(p_{\mathrm{corr}} - \tfrac{1}{2})$, with
 $\delta_{\mathrm{indep}} \approx 0.68$--$0.76$ from Table~\ref{tab:indep}, gives the
 range $0.12$--$0.15$).
-This coefficient exceeds zero whenever models are better-calibrated than chance ($p_{\mathrm{corr}} > \tfrac{1}{2}$), which holds on all our benchmarks.  STL-10's low gain is explained by reduced $p_{\mathrm{corr}}$: correlated underfitting makes the ensemble no better than either model when they disagree.
+This coefficient exceeds zero whenever models are better-calibrated than chance ($p_{\mathrm{corr}} > \tfrac{1}{2}$), which holds on all our benchmarks.
+Table~\ref{tab:pcorr} quantifies the gain decomposition across all datasets and reveals the mechanism behind varying $p_{\mathrm{corr}}$.  The key column is $p_{\mathrm{same}}$---the fraction of examples where both models predict the \emph{same} wrong class (correlated failure): when models make correlated mistakes, they increase neither ensemble accuracy nor diversity.  MNIST has $p_{\mathrm{same}} = 1.0\%$ and high $p_{\mathrm{corr}} = 0.693$ (near-independent failures), while STL-10 has $p_{\mathrm{same}} = 21.2\%$ and low $p_{\mathrm{corr}} = 0.566$ (strongly correlated failures).  The gain formula gain $= \mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$ quantifies both effects: MNIST has low gain from near-zero disagreement; STL-10 has low gain from near-zero $(p_{\mathrm{corr}} - \tfrac{1}{2})$.
 \end{remark}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrrrrr}
+\toprule
+Dataset & Error $\varepsilon$ & Disagree & Gain & $p_{\mathrm{same}}$ & $p_{\mathrm{corr}}$ & Mechanism\\
+\midrule
+MNIST (MLP)       & 2.4\% & 2.6\% & 0.50\,pp & 1.0\% & 0.693 & Low disagree \\
+SVHN              & 11.3\% & 11.6\% & 1.87\,pp & 4.2\% & 0.661 & \\
+FashionMNIST      & 8.5\% & 6.7\% & 0.83\,pp & 4.8\% & 0.623 & Low disagree \\
+CIFAR-10 (CNN)    & 26.5\% & 30.0\% & 3.50\,pp & 8.9\% & 0.635 & High gain \\
+CIFAR-10 (ResNet) & 16.1\% & 22.8\% & 3.39\,pp & 6.7\% & 0.648 & High gain \\
+STL-10            & 39.1\% & 26.7\% & 1.76\,pp & 21.2\% & 0.566 & Low $p_{\rm corr}$ \\
+\bottomrule
+\end{tabular}
+\caption{Cross-dataset gain decomposition.  Disagree $=$ fraction of examples where models predict
+different classes.  Gain $= \mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$.
+$p_{\mathrm{same}}$ $=$ fraction of examples where both models predict the \emph{same} wrong class
+(operationalises ``correlated failure'').  $p_{\mathrm{corr}} = P(\text{ensemble right} \mid \text{models disagree})$,
+derived from gain and disagree.
+MNIST has low gain from near-zero disagreement despite the highest $p_{\mathrm{corr}}$;
+STL-10 has low gain from suppressed $p_{\mathrm{corr}}$ caused by high $p_{\mathrm{same}}$,
+even though its disagreement rivals CIFAR-10.}
+\label{tab:pcorr}
+\end{table}
 
 \begin{remark}[Theoretical basis for the universal $M$-member scaling factor]
 \label{rem:mscaling}
