@@ -146,11 +146,16 @@ task difficulty?
 
   \item \textbf{(Section~\ref{sec:gain_error})} We establish a quantitative
         gain-error law for $K\!=\!10$ tasks: ensemble gain $\approx 14\%\times\varepsilon$
-        ($r = 0.962$, $p = 2.6\times 10^{-13}$, $n = 23$).  Two controlled
-        negative controls---STL-10 (data scarcity; correlated failures) and
-        CIFAR-100 (K=100; reduced $p_{\mathrm{corr}}$)---both deviate below
-        the line for different mechanistic reasons, jointly validating the
-        theoretical interpretation (Remarks~\ref{rem:coefficient}).
+        ($r = 0.962$, $p = 2.6\times 10^{-13}$, $n = 23$), and decompose gain
+        $= \mathrm{dis} \times (p_{\mathrm{corr}} - \tfrac{1}{2})$ to explain
+        all deviations.  We introduce $p_{\mathrm{same}}$ (fraction of examples
+        where both models predict the same wrong class) as the mechanistic driver
+        of $p_{\mathrm{corr}}$: it predicts $p_{\mathrm{corr}}$ with $r = -0.946$
+        ($p = 0.0004$) across clean and corrupted settings
+        (Figure~\ref{fig:pcorr_psame}, Table~\ref{tab:pcorr}).  Two controlled
+        negative controls---STL-10 (high $p_{\mathrm{same}}=21\%$; data scarcity)
+        and CIFAR-100 ($K=100$; lower coefficient)---deviate below the line for
+        different reasons, jointly validating Remark~\ref{rem:coefficient}.
 
   \item \textbf{(Sections~\ref{sec:diversity}, \ref{sec:architecture})}
         We provide multi-scale validation: (a)~per-class error rate
