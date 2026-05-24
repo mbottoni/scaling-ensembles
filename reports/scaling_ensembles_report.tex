@@ -1365,13 +1365,24 @@ model's AUROC for detecting Gaussian noise collapses to 0.531, while
 a 5-member ensemble maintains 0.729---a finding that ties calibration
 failure directly to practical uncertainty failure.
 
-We establish a quantitative gain-error law: two-member ensemble gain
-$\approx 14\%\times\varepsilon$ across 23 dataset--width combinations
-($r = 0.962$, $p = 2.6\times 10^{-13}$), with STL-10 as a natural negative
-control showing that error from data scarcity---unlike error from intrinsic
-ambiguity---does not generate ensemble gain.  This result sharpens the
-practical implication: ensembles benefit hard tasks where errors are
-\emph{aleatoric}, not merely large.
+We establish three quantitative laws that together form a complete
+predictive framework:
+\begin{itemize}
+  \item \emph{Gain-error law:} $\mathrm{gain}(2) \approx 14\%\times\varepsilon$
+        ($r=0.962$, $n=23$) for K=10 tasks.
+  \item \emph{Universal $M$-scaling law:} $\mathrm{gain}(M) = \mathrm{gain}(2)
+        \times f(M)$ where $f(M) = (1+0.898(M-2))/(1+0.357(M-2))$ (CV $<5\%$
+        across widths, RMSE $<0.007$), with saturation $f(\infty)\approx 2.51$.
+  \item \emph{$p_{\rm same}$--$p_{\rm corr}$ law:} the fraction of examples where
+        both models predict the same wrong class ($p_{\rm same}$) predicts the
+        ensemble's conditional correctness rate ($p_{\rm corr}$) with
+        $r=-0.946$ across clean and corrupted conditions.
+\end{itemize}
+Two controlled negative controls validate the framework by isolating failure
+mechanisms: STL-10 (data scarcity; $p_{\rm same}=21.2\%$; $p_{\rm corr}=0.566$)
+and preliminary CIFAR-100 ($K=100$ classes; reduced gain coefficient because $K$
+governs $p_{\rm corr}$) both deviate below the gain-error regression line for
+different mechanistic reasons.
 
 We further demonstrate that two-member ensembles of smaller models
 outperform single larger models with twice the parameter count
@@ -1382,7 +1393,9 @@ weight-space model merging underperforms ensembling on hard tasks.
 Per-class error rate predicts per-class disagreement with $r = 0.982$
 ($p < 10^{-30}$), ruling out dataset or resolution confounds.  These
 results collectively imply that deep ensembles remain practically
-valuable for large overparameterized models whenever the task is genuinely hard.
+valuable for large overparameterized models whenever the task is genuinely hard,
+and provide practitioners with a 3-step diagnostic protocol
+(gain prediction, $p_{\rm same}$ check, $M$-member scaling) to guide deployment.
 
 Our code, experiment configurations, and analysis scripts will be released
 upon publication.
