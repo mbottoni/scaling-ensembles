@@ -1241,25 +1241,42 @@ for $\varepsilon \in [0.15, 0.35]$ (K=10 regime).
 \paragraph{Practical implications.}
 Our results support ensemble deployment for large models on hard tasks.
 The claim that overparameterization makes ensembles redundant does not
-hold at the scale and task range we study.  The gain-error law
-(Section~\ref{sec:gain_error}) provides a practitioner-facing estimator:
+hold at the scale and task range we study.  Our framework provides a
+\emph{complete practitioner toolkit}:
+
+\textbf{Step 1---Predict 2-member gain from error rate.}
+The gain-error law (K=10 tasks):
 \[
   \text{expected 2-member gain} \;\approx\; 14\% \times \varepsilon_{\mathrm{single}},
 \]
-valid when task difficulty is intrinsic (not driven by data scarcity).
 At $\varepsilon = 30\%$ (CIFAR-10 level), this predicts ${\approx}4.2$\,pp;
 at $\varepsilon = 10\%$ (FashionMNIST level), ${\approx}1.5$\,pp.
+
+\textbf{Step 2---Diagnose failure modes using $p_{\rm same}$.}
+The gain-error law breaks down when high error is caused by data scarcity
+or distribution shift, not intrinsic class ambiguity.  To diagnose this,
+compute $p_{\rm same}$ (fraction of validation examples where both models
+predict the same wrong class) on a small 2-member pilot.  If
+$p_{\rm same} < 10\%$: errors are diverse; expect the gain-error law to hold.
+If $p_{\rm same} > 20\%$: errors are correlated; $p_{\rm corr}$ will be
+near $0.5$--$0.57$ and gain will be $2$--$3\times$ below the prediction.
+The $p_{\rm same}$--$p_{\rm corr}$ relationship holds across clean and corrupted
+settings ($r = -0.946$, $p = 0.0004$; Figure~\ref{fig:pcorr_psame}).
+
+\textbf{Step 3---Predict $M$-member gain from 2-member baseline.}
+Run a single 2-member pilot; the universal $M$-scaling law then gives:
+\[
+  \mathrm{gain}(M) \;\approx\; \mathrm{gain}(2) \;\times\; f(M),
+  \quad f(M) = \frac{1+0.898(M-2)}{1+0.357(M-2)},
+\]
+with saturation $f(\infty) \approx 2.51$.
+The ensemble-size scaling curves (Figure~\ref{fig:ensemble_scaling}) confirm that
+3--5 members captures ${\approx}75\%$ of achievable gain, regardless of capacity.
+
 For calibration, single-model ECE on CIFAR-10 grows from 7\% to 22\%
 with width, while a 10-member ensemble NLL is flat at ${\approx}0.64$.
 If accuracy exceeds $\sim$90\%, temperature scaling is comparably effective
 for calibration, and ensembles provide diminishing gains ($<1$\,pp).
-The ensemble-size scaling curves (Figure~\ref{fig:ensemble_scaling}) show
-that practitioners can expect $7$--$8$\,pp accuracy gain from a 10-member
-ensemble on CIFAR-10, regardless of model capacity.
-A critical caveat: the gain-error law breaks down when high error is caused
-by data scarcity (as in STL-10), which produces correlated rather than
-diverse failures.  Practitioners should verify that the source of error is
-intrinsic task ambiguity before expecting strong ensemble benefit.
 
 \paragraph{Connection to model merging.}
 Our diversity--barrier dissociation is directly relevant to model merging
