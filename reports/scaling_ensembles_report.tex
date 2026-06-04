@@ -43,10 +43,10 @@ gain, and calibration benefit are governed by task difficulty, not parameter
 count}: MNIST shows only $2.3$--$3.3\%$ disagreement and $<0.6$\,pp gain
 at all widths; CIFAR-10 sustains $25$--$31\%$ disagreement and
 $3$--$4$\,pp gain across a $250\times$ parameter range.  Pooling
-414 pairwise comparisons across six datasets and two architectures,
-Pearson $r = 0.935$ ($p < 10^{-186}$) confirms that accuracy is a
+418 pairwise comparisons across six datasets and two architectures,
+Pearson $r = 0.950$ ($p < 10^{-212}$) confirms that accuracy is a
 universal predictor of ensemble diversity; the partial correlation
-controlling for parameter count is $r = 0.928$, confirming that parameter
+controlling for parameter count is $r = 0.946$, confirming that parameter
 count is not the driver.
 
 We establish three quantitative laws: (i)~a \textbf{gain-error law}
@@ -61,7 +61,7 @@ examples where both models predict the same wrong class ($p_{\rm same}$)
 predicts $p_{\rm corr}=P(\text{ens right}\mid\text{disagree})$ with
 $r=-0.946$ ($p=0.0004$, $n=8$) across clean and corrupted conditions.
 Two controlled outliers---STL-10 (data scarcity; $p_{\rm same}=21.2\%$;
-$p_{\rm corr}=0.566$) and preliminary CIFAR-100 ($K\!=\!100$ classes;
+$p_{\rm corr}=0.566$) and CIFAR-100 ($K\!=\!100$ classes;
 reduced gain coefficient)---deviate below the gain-error line for distinct
 mechanistic reasons, jointly validating the framework.
 
@@ -156,8 +156,8 @@ task difficulty?
   \item \textbf{(Sections~\ref{sec:diversity}, \ref{sec:architecture})}
         We provide multi-scale validation: (a)~per-class error rate
         predicts per-class disagreement within CIFAR-10 with $r = 0.982$
-        ($p < 10^{-30}$); (b)~pooling all 414 data points (pairwise comparisons and aggregates)
-        across six datasets and two architectures, Pearson $r = 0.935$ ($p < 10^{-186}$),
+        ($p < 10^{-30}$); (b)~pooling all 418 data points (pairwise comparisons and aggregates)
+        across six datasets and two architectures, Pearson $r = 0.950$ ($p < 10^{-212}$),
         with partial $r = 0.928$ controlling for parameter count;
         (c)~cross-architecture (SmallCNN + ResNet) $r = 0.954$.
 
@@ -348,9 +348,8 @@ CIFAR-100$^\dagger$     & RGB 32$\times$32       & 100 & 50\,000  & 43\%\\
 \bottomrule
 \end{tabular}
 \caption{Benchmark summary ordered by task difficulty.
-$^\dagger$CIFAR-100 training in progress; widths $w \in \{16,32,64\}$ complete
-(5 seeds each), $w=128$ in progress.  All reported CIFAR-100 statistics are
-preliminary.}
+$^\dagger$CIFAR-100 uses the same CNN width grid $w \in \{16,32,64,128\}$ with
+5 seeds each (20 runs); all checkpoints complete.}
 \label{tab:datasets}
 \end{table}
 
@@ -431,8 +430,8 @@ error rate and mean pairwise disagreement across five $K=10$ benchmarks is
 $r = 0.94$ ($p = 0.016$; Spearman $\rho = 0.90$, $p = 0.037$).  The ranking from
 easiest to hardest---MNIST~$\to$ FashionMNIST~$\to$ SVHN~$\to$ CIFAR-10
 $\approx$ STL-10---matches the ranking by disagreement exactly.  Adding
-CIFAR-100 (preliminary; 40--43\% accuracy, 54--62\% disagreement) extends
-this to $r = 0.972$ ($p = 0.001$; Spearman $\rho = 0.943$, $p = 0.005$; $n = 6$
+CIFAR-100 (40--43\% accuracy, 54--62\% disagreement) extends
+this to $r = 0.971$ ($p = 0.001$; Spearman $\rho = 0.943$, $p = 0.005$; $n = 6$
 datasets), confirming the relationship holds across radically different class
 counts and difficulty levels.
 
@@ -470,16 +469,16 @@ diversity.
 
 \textbf{Comprehensive accuracy-diversity relationship.}
 Figure~\ref{fig:acc_disagree} pools all data across datasets,
-architectures, and widths ($n = 414$: 216 CNN pairs $+$ 180 ResNet pairs $+$ 18 dataset aggregates).  The Pearson correlation
-between individual model accuracy and disagreement is $r = 0.935$
-($p < 10^{-186}$); Spearman $\rho = 0.889$ ($p < 10^{-140}$) confirms
+architectures, and widths ($n = 418$: 216 CNN pairs $+$ 180 ResNet pairs $+$ 22 dataset aggregates).  The Pearson correlation
+between individual model accuracy and disagreement is $r = 0.950$
+($p < 10^{-212}$); Spearman $\rho = 0.892$ ($p < 10^{-144}$) confirms
 the relationship is not driven by distributional assumptions.  To
 directly test whether parameter count confounds the relationship, we
 compute the partial correlation between accuracy and disagreement
-\emph{controlling} for $\log(\text{params})$: the partial $r = 0.928$
-($p < 10^{-177}$), nearly identical to the marginal $r = 0.935$, while
+\emph{controlling} for $\log(\text{params})$: the partial $r = 0.946$
+($p < 10^{-205}$), nearly identical to the marginal $r = 0.950$, while
 the direct correlation between parameter count and disagreement is only
-$r = -0.303$.  Accuracy is a universal predictor of diversity;
+$r = -0.273$.  Accuracy is a universal predictor of diversity;
 parameter count is not.
 
 \begin{figure}[h]
@@ -487,9 +486,9 @@ parameter count is not.
 \includegraphics[width=0.75\linewidth]{../outputs/series/paper-plots/accuracy_vs_disagreement.png}
 \caption{Individual model accuracy vs.\ pairwise disagreement.  Visible
 markers show per-(dataset, architecture, width) means; OLS and Pearson
-statistics are computed from all $414$ individual pairwise model comparisons
-(216 CNN $+$ 180 ResNet $+$ 18 summary-dataset aggregates), giving
-$r = 0.935$ ($p < 10^{-186}$).  Marker size scales with
+statistics are computed from all $418$ individual pairwise model comparisons
+(216 CNN $+$ 180 ResNet $+$ 22 summary-dataset aggregates), giving
+$r = 0.950$ ($p < 10^{-212}$).  Marker size scales with
 $\log(\text{parameters})$.  Dotted curve: theoretical $2\varepsilon(1-\varepsilon)$
 under error independence.}
 \label{fig:acc_disagree}
@@ -546,7 +545,7 @@ is suppressed: $0.267 \times 0.066 = 1.8$\,pp vs.\ $0.300 \times 0.135 = 4.0$\,p
 Table~\ref{tab:pcorr} and Figure~\ref{fig:pcorr_psame} quantify this mechanism
 across all datasets.
 
-\emph{CIFAR-100 ($K\!=\!100$ classes):}  Our preliminary CIFAR-100
+\emph{CIFAR-100 ($K\!=\!100$ classes):}  Our CIFAR-100
 results show 54--62\% disagreement at 40--43\% accuracy, but only
 3.8--4.6\,pp gain---below the 10-class predicted 8.4\,pp.  The deviation
 arises from the number of classes: with $K=100$, a wrong model's
@@ -571,7 +570,7 @@ applies to $K=10$ tasks; practitioners should recalibrate for $K \gg 10$.
 $p=2.6\!\times\!10^{-13}$) gives gain $\approx 14\%\times\varepsilon$.
 \emph{STL-10} (brown $\times$) lies far below the line: data scarcity (5k images)
 causes correlated failures, not diverse aleatoric errors.
-\emph{CIFAR-100} (pink hexagons, preliminary) also lies below: with $K=100$ classes,
+\emph{CIFAR-100} (pink hexagons) also lies below: with $K=100$ classes,
 $p_{\mathrm{corr}}$ drops from 0.62 to $\approx$0.57, reducing the gain coefficient.}
 \label{fig:gain_vs_error}
 \end{figure}
@@ -1352,7 +1351,7 @@ where overconfident predictions are harmful.
 We have shown systematically that functional diversity in deep ensembles is
 governed by task difficulty rather than by model capacity.  Across seven
 benchmarks spanning MNIST (2.3\% pairwise disagreement) to CIFAR-100
-(54--62\% disagreement, preliminary), two model families (SmallCNN and ResNetCIFAR),
+(54--62\% disagreement), two model families (SmallCNN and ResNetCIFAR),
 and a $350\times$ parameter range (27K to 9.6M), pairwise prediction disagreement,
 ensemble accuracy gain, and calibration benefit are consistently large on
 hard tasks and consistently small on easy tasks, irrespective of width.
@@ -1381,7 +1380,7 @@ predictive framework:
 \end{itemize}
 Two controlled negative controls validate the framework by isolating failure
 mechanisms: STL-10 (data scarcity; $p_{\rm same}=21.2\%$; $p_{\rm corr}=0.566$)
-and preliminary CIFAR-100 ($K=100$ classes; reduced gain coefficient because $K$
+and CIFAR-100 ($K=100$ classes; reduced gain coefficient because $K$
 governs $p_{\rm corr}$) both deviate below the gain-error regression line for
 different mechanistic reasons.
 
