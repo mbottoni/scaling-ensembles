@@ -1,0 +1,38 @@
+name: cifar100-cnn-augmented
+output_dir: outputs/series/cifar100-cnn-augmented
+
+# Augmented counterpart to cifar100_cnn_width_sweep_cpu.yaml. Identical CNN,
+# optimizer, and 40-epoch budget, but with standard CIFAR augmentation
+# (random crop + horizontal flip) to test whether the task-difficulty
+# invariance of functional diversity survives outside the memorization regime.
+data:
+  name: CIFAR100
+  root: data
+  batch_size: 128
+  eval_batch_size: 512
+  num_workers: 0
+  augment: true
+
+model:
+  architecture: cnn
+  widths: [16, 64, 128]
+  hidden_layers: 2
+  activation: relu
+
+training:
+  epochs: 40
+  seeds: [0, 1, 2, 3, 4]
+  device: mps
+  optimizer:
+    lr: 0.001
+    weight_decay: 0.0001
+
+similarity:
+  max_pairs_per_width:
+  interpolation_steps: 11
+
+cache:
+  enabled: true
+  reuse_checkpoints: true
+  reuse_logits: true
+  force_retrain: false
