@@ -83,20 +83,29 @@ def predict(model: torch.nn.Module, x: torch.Tensor, device: torch.device) -> tu
 
 
 def ensemble_metrics(preds: list[torch.Tensor], probs: list[torch.Tensor], targets: torch.Tensor) -> dict:
-    """Individual accuracy, pairwise disagreement, ensemble accuracy + gain."""
+    """Individual accuracy, pairwise disagreement, and ensemble gain.
+
+    ``gain_pp`` is the 2-member gain averaged over all seed pairs (matching the
+    rest of the paper's pairwise convention); ``gain_pp_m`` is the full
+    M-member ensemble gain (all available seeds averaged).
+    """
     accs = [(p == targets).float().mean().item() for p in preds]
-    pair_dis = [
-        (preds[i] != preds[j]).float().mean().item()
-        for i, j in itertools.combinations(range(len(preds)), 2)
-    ]
+    n = len(preds)
+    pair_dis, pair_gain = [], []
+    for i, j in itertools.combinations(range(n), 2):
+        pair_dis.append((preds[i] != preds[j]).float().mean().item())
+        ens_ij = ((probs[i] + probs[j]) / 2).argmax(dim=1)
+        acc_ij = (ens_ij == targets).float().mean().item()
+        pair_gain.append(acc_ij - 0.5 * (accs[i] + accs[j]))
     ens_probs = torch.stack(probs).mean(dim=0)
-    ens_acc = (ens_probs.argmax(dim=1) == targets).float().mean().item()
+    ens_acc_m = (ens_probs.argmax(dim=1) == targets).float().mean().item()
     mean_indiv = float(np.mean(accs))
     return {
         "indiv_acc": mean_indiv,
         "disagreement": float(np.mean(pair_dis)),
-        "ensemble_acc": ens_acc,
-        "gain_pp": (ens_acc - mean_indiv) * 100,
+        "gain_pp": float(np.mean(pair_gain)) * 100,       # 2-member (primary)
+        "ensemble_acc_m": ens_acc_m,                       # M-member ensemble accuracy
+        "gain_pp_m": (ens_acc_m - mean_indiv) * 100,       # M-member gain
     }
 
 
@@ -169,7 +178,7 @@ def main() -> None:
         for sev in SEVERITIES:
             rows = sev_accum[sev]
             agg = {k: round(float(np.mean([r[k] for r in rows])), 4)
-                   for k in ("indiv_acc", "disagreement", "ensemble_acc", "gain_pp")}
+                   for k in ("indiv_acc", "disagreement", "gain_pp", "ensemble_acc_m", "gain_pp_m")}
             by_severity.append({"width": width, "severity": sev, "n_models": n_models,
                                "n_corruptions": len(rows), **agg})
             LOGGER.info("width %d sev %d (mean/%d std): acc=%.3f disagree=%.3f gain=%.2fpp",
