@@ -167,11 +167,16 @@ task difficulty?
         $+0.9$ pp for ResNet), with the gap governed by remaining
         accuracy headroom.
 
-  \item \textbf{(Section~\ref{sec:corrupted})} We demonstrate that
-        overconfidence causes an OOD detection failure: at width 256,
-        the single model's AUROC for Gaussian-corrupted inputs collapses
-        to 0.531 (near chance), while a 5-member ensemble achieves
-        0.729---a $+0.198$ improvement---directly linking the
+  \item \textbf{(Section~\ref{sec:corrupted})} We extend the law to
+        distribution shift on the official CIFAR-10-C benchmark (15
+        corruptions $\times$ 5 severities): disagreement rises monotonically
+        $27.5\%\!\to\!42.8\%$ with severity while accuracy falls
+        $73.6\%\!\to\!50.9\%$, with error--disagreement $r=0.952$ across all
+        width$\times$severity cells---the clean-data law governs shifted data,
+        width-invariantly.  We further show overconfidence causes an OOD
+        detection failure: at width 256, the single model's AUROC for
+        Gaussian-corrupted inputs collapses to 0.531 (near chance), while a
+        5-member ensemble achieves 0.729 ($+0.198$), linking the
         overconfidence scaling law to practical uncertainty failure.
 \end{enumerate}
 
@@ -342,7 +347,7 @@ MNIST          & grayscale 28$\times$28 & 10  & 60\,000  & 98\% (MLP)\\
 FashionMNIST   & grayscale 28$\times$28 & 10  & 60\,000  & 92\%\\
 SVHN           & RGB 32$\times$32       & 10  & 73\,257  & 90\%\\
 CIFAR-10       & RGB 32$\times$32       & 10  & 50\,000  & 76\% (CNN), 84\% (ResNet)\\
-CIFAR-10-C     & corrupted RGB 32$\times$32 & 10  & --   & 33--62\%\\
+CIFAR-10-C     & corrupted RGB 32$\times$32 & 10  & --   & 20--75\%\\
 STL-10         & RGB 96$\times$96       & 10  & 5\,000   & 64\%\\
 CIFAR-100$^\dagger$     & RGB 32$\times$32       & 100 & 50\,000  & 43\%\\
 \bottomrule
@@ -784,6 +789,75 @@ ability to exploit disagreement for accuracy improvement.
 
 \subsection{Corrupted-Input Evaluation}
 \label{sec:corrupted}
+
+\textbf{Official CIFAR-10-C benchmark.}  We first evaluate on the standard
+CIFAR-10-C suite~\citep{hendrycks2019robustness} (15 corruption types
+$\times$ 5 severity levels), reusing the clean-trained SmallCNN ensembles with
+\emph{no retraining}.  This is the cleanest test of the difficulty hypothesis
+under distribution shift: corruption severity is an external difficulty knob,
+decoupled from both dataset identity and model capacity.  We evaluate five
+widths (38K--9.6M parameters) with five seeds each and report metrics averaged
+over the 15 canonical corruptions (Table~\ref{tab:cifar10c},
+Figure~\ref{fig:cifar10c}).
+
+As severity rises from 0 (clean) to 5, mean individual accuracy falls
+$73.6\% \to 50.9\%$ while pairwise disagreement rises \emph{monotonically}
+$27.5\% \to 42.8\%$.  The governing accuracy--diversity relationship is
+unchanged under shift: pooling all (width, severity) cells, the
+error--disagreement correlation is $r = 0.952$, matching the clean-data law
+(Section~\ref{sec:diversity}).  The trend is also width-invariant---at every
+severity the five widths cluster within a few points
+(Figure~\ref{fig:cifar10c})---so corruption-induced diversity is governed by
+task difficulty, not capacity, exactly as on clean data.
+
+Ensemble gain follows the $\mathrm{gain}=\mathrm{dis}\times(p_{\rm corr}-\tfrac12)$
+decomposition (Section~\ref{sec:gain_error}): the 2-member gain rises to a peak
+near severity~2 ($3.6$\,pp) then declines to $3.0$\,pp at severity~5, because
+disagreement keeps increasing but $p_{\rm corr}$ falls as severe corruptions
+drive models toward correlated errors.  The full 5-member ensemble sustains
+$5.7$--$6.7$\,pp gain across the entire severity range.  Ensembles thus remain
+beneficial under distribution shift, and the benefit is quantitatively
+predicted by the same law that governs clean data.
+
+\begin{table}[h]
+\centering
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{cccccc}
+\toprule
+Severity & Indiv.\ acc. & Disagreement & 2-ens.\ gain & 5-ens.\ gain\\
+\midrule
+0 (clean) & $73.6\%$ & $27.5\%$ & $3.54$\,pp & $6.20$\,pp\\
+1         & $69.2\%$ & $31.3\%$ & $3.61$\,pp & $6.58$\,pp\\
+2         & $65.1\%$ & $34.3\%$ & $3.64$\,pp & $6.66$\,pp\\
+3         & $61.0\%$ & $37.1\%$ & $3.51$\,pp & $6.53$\,pp\\
+4         & $56.1\%$ & $39.8\%$ & $3.27$\,pp & $6.15$\,pp\\
+5         & $50.9\%$ & $42.8\%$ & $3.00$\,pp & $5.69$\,pp\\
+\bottomrule
+\end{tabular}
+\caption{Official CIFAR-10-C results, averaged over the 15 canonical corruptions
+and five widths (38K--9.6M params, 5 seeds each), clean-trained models with no
+retraining.  Disagreement rises monotonically with severity as accuracy falls
+($r=0.952$ between error and disagreement across all width$\times$severity
+cells); ensemble gain is sustained throughout.}
+\label{tab:cifar10c}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{../outputs/series/paper-plots/cifar10c_severity.png}
+\caption{CIFAR-10-C across severities, one line per width.  As severity
+increases, individual accuracy falls (left), pairwise disagreement rises
+(middle), and 2-member ensemble gain is sustained (right).  The curves for all
+five widths (38K--9.6M params) nearly coincide, showing that corruption-induced
+functional diversity is governed by task difficulty, not capacity.}
+\label{fig:cifar10c}
+\end{figure}
+
+\textbf{Fine-grained failure modes (custom corruptions).}  To dissect
+\emph{how} single models fail and ensembles compensate, we examine two specific
+corruption families (additive Gaussian noise and Gaussian blur) at controlled
+intensity, including their effect on out-of-distribution detection.
 
 \begin{table}[h]
 \centering
