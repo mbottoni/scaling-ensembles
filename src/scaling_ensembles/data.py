@@ -75,9 +75,13 @@ def make_datasets(config: DataConfig):
         return train, eval_dataset, DatasetInfo(input_shape=(1, 28, 28), num_classes=10)
 
     if name in {"cifar10", "cifar-10"}:
-        train_transform = image_transform(
+        train_transform = train_image_transform(
             mean=(0.4914, 0.4822, 0.4465),
             std=(0.2470, 0.2435, 0.2616),
+            augment=config.augment,
+            crop_size=32,
+            crop_padding=4,
+            horizontal_flip=True,
         )
         eval_transform = image_transform(
             mean=(0.4914, 0.4822, 0.4465),
@@ -91,9 +95,13 @@ def make_datasets(config: DataConfig):
         return train, eval_dataset, DatasetInfo(input_shape=(3, 32, 32), num_classes=10)
 
     if name in {"cifar100", "cifar-100"}:
-        train_transform = image_transform(
+        train_transform = train_image_transform(
             mean=(0.5071, 0.4867, 0.4408),
             std=(0.2675, 0.2565, 0.2761),
+            augment=config.augment,
+            crop_size=32,
+            crop_padding=4,
+            horizontal_flip=True,
         )
         eval_transform = image_transform(
             mean=(0.5071, 0.4867, 0.4408),
@@ -162,6 +170,33 @@ def image_transform(
         raise ValueError(
             f"Unsupported eval_variant: {variant}. Try clean, gaussian_noise, or blur."
         )
+    steps.append(transforms.Normalize(mean, std))
+    return transforms.Compose(steps)
+
+
+def train_image_transform(
+    mean: tuple[float, ...],
+    std: tuple[float, ...],
+    augment: bool = False,
+    crop_size: int = 32,
+    crop_padding: int = 4,
+    horizontal_flip: bool = True,
+) -> transforms.Compose:
+    """Training transform with optional standard image augmentation.
+
+    When ``augment`` is False this matches :func:`image_transform` (clean).
+    When True it prepends random-crop-with-reflect-padding and (optionally)
+    random horizontal flip -- the standard CIFAR augmentation recipe -- which
+    operate on the PIL image before tensor conversion and normalization.
+    """
+    if not augment:
+        return image_transform(mean=mean, std=std)
+    steps: list[object] = [
+        transforms.RandomCrop(crop_size, padding=crop_padding, padding_mode="reflect"),
+    ]
+    if horizontal_flip:
+        steps.append(transforms.RandomHorizontalFlip())
+    steps.append(transforms.ToTensor())
     steps.append(transforms.Normalize(mean, std))
     return transforms.Compose(steps)
 

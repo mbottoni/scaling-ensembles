@@ -16,6 +16,7 @@ class DataConfig:
     num_workers: int = 0
     train_subset: int | None = None
     eval_subset: int | None = None
+    augment: bool = False
     eval_variant: str = "clean"
     noise_std: float = 0.15
     blur_kernel_size: int = 3
